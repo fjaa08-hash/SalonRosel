@@ -1,0 +1,1193 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --plum:#5A1638;
+    --plum-ink:#2B0E1C;
+    --rose:#C93B6B;
+    --gold:#D9A441;
+    --blush:#FCEFEA;
+    --card:#FFFFFF;
+    --line:#F0DCD8;
+    --ok:#3E8F5C;
+    --warn:#D98B2B;
+    --danger:#C6425E;
+    --muted:#8B6E77;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--blush);
+    color:var(--plum-ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--blush);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* Header */
+  .hdr{
+    padding:26px 20px 18px;
+    background:var(--plum);
+    color:#fff;
+    border-radius:0 0 28px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hdr::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-50px;
+    width:150px; height:150px;
+    border-radius:50%;
+    background:var(--rose);
+    opacity:.35;
+  }
+  .hdr::before{
+    content:"";
+    position:absolute;
+    right:30px; bottom:-60px;
+    width:90px; height:90px;
+    border-radius:50%;
+    background:var(--gold);
+    opacity:.3;
+  }
+  .hdr-top{display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;}
+  .brand{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:22px;
+    letter-spacing:.2px;
+  }
+  .brand span{color:var(--gold);}
+  .hdr-sub{
+    margin-top:4px;
+    font-size:13px;
+    color:#EBC9D3;
+    position:relative; z-index:1;
+  }
+  .stats-row{
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+    position:relative; z-index:1;
+  }
+  .stat{
+    flex:1;
+    background:rgba(255,255,255,.12);
+    border-radius:14px;
+    padding:10px 12px;
+  }
+  .stat b{display:block; font-family:'Sora',sans-serif; font-size:20px; font-weight:700;}
+  .stat span{font-size:11.5px; color:#EBC9D3;}
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    margin:16px 16px 0;
+    background:#fff;
+    border-radius:14px;
+    padding:4px;
+    box-shadow:0 2px 10px rgba(90,22,56,.06);
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:9px 2px;
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+    border-radius:11px;
+    cursor:pointer;
+    user-select:none;
+    transition:background .15s, color .15s;
+  }
+  .tab.active{
+    background:var(--plum);
+    color:#fff;
+  }
+
+  .view{padding:16px; flex:1; display:none;}
+  .view.active{display:block;}
+
+  /* Search */
+  .search{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:14px;
+  }
+  .search input{
+    border:none; outline:none; flex:1;
+    font-family:'Inter',sans-serif; font-size:14px;
+    background:transparent; color:var(--plum-ink);
+  }
+  .search svg{flex-shrink:0;}
+
+  /* Client card */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .client-row{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .client-name{font-weight:700; font-size:15px;}
+  .client-phone{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .visits-pill{
+    font-size:11px; font-weight:600; color:var(--plum);
+    background:#F4E2EA; padding:3px 9px; border-radius:20px; white-space:nowrap;
+  }
+  .client-actions{display:flex; gap:8px; margin-top:12px;}
+  .btn-mini{
+    flex:1;
+    text-align:center;
+    font-size:12.5px;
+    font-weight:600;
+    padding:8px 6px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--plum);
+    cursor:pointer;
+    text-decoration:none;
+    display:flex; align-items:center; justify-content:center; gap:5px;
+  }
+  .btn-mini.wa{ background:#EAF7EE; border-color:#CFEBD8; color:var(--ok); }
+  .balance-tag{
+    margin-top:10px;
+    font-size:12px;
+    font-weight:600;
+    padding:6px 10px;
+    border-radius:10px;
+    display:inline-block;
+  }
+  .balance-tag.pend{ background:#FCEFDD; color:var(--warn); }
+
+  .empty{
+    text-align:center;
+    color:var(--muted);
+    padding:40px 16px;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+  .empty b{display:block; color:var(--plum-ink); font-size:15px; margin-bottom:6px; font-family:'Sora',sans-serif;}
+
+  /* FAB */
+  .fab{
+    position:fixed;
+    left:50%;
+    transform:translateX(calc(-50% + 190px));
+    bottom:22px;
+    width:56px; height:56px;
+    border-radius:50%;
+    background:var(--rose);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 20px rgba(201,59,107,.45);
+    cursor:pointer;
+    border:none;
+    z-index:20;
+  }
+  @media (max-width:480px){
+    .fab{ transform:none; right:24px; left:auto; }
+  }
+
+  /* Form */
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block; font-size:12.5px; font-weight:600; color:var(--plum-ink);
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    background:#fff;
+    color:var(--plum-ink);
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--rose); outline-offset:1px; }
+  .row2{display:flex; gap:10px;}
+  .row2 .field{flex:1;}
+  .helper{font-size:11.5px; color:var(--muted); margin-top:4px;}
+  .remaining-box{
+    background:#F4E2EA;
+    border-radius:12px;
+    padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:16px;
+  }
+  .remaining-box b{ font-family:'Sora',sans-serif; font-size:19px; color:var(--plum); }
+
+  .btn-main{
+    width:100%;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    background:var(--plum);
+    color:#fff;
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+  }
+  .btn-main.secondary{ background:#fff; color:var(--plum); border:1.5px solid var(--plum); margin-top:8px; }
+
+  /* Modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(43,14,28,.45);
+    display:none; align-items:flex-end; justify-content:center; z-index:30;
+  }
+  .overlay.show{display:flex;}
+  .sheet{
+    background:#fff;
+    width:100%; max-width:480px;
+    border-radius:22px 22px 0 0;
+    padding:20px 20px 26px;
+    max-height:86vh;
+    overflow-y:auto;
+    animation:up .18s ease-out;
+  }
+  @keyframes up{ from{transform:translateY(24px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+  .sheet-hdr{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .sheet-title{font-family:'Sora',sans-serif; font-weight:700; font-size:17px;}
+  .close-x{ background:#F4E2EA; border:none; width:30px; height:30px; border-radius:50%; color:var(--plum); font-size:16px; cursor:pointer; }
+
+  /* Reminders list */
+  .rem-item{
+    background:var(--card);
+    border-radius:16px;
+    border:1px solid var(--line);
+    padding:14px 16px;
+    margin-bottom:10px;
+    border-left:4px solid var(--warn);
+  }
+  .rem-item.overdue{ border-left-color:var(--danger); }
+  .rem-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .rem-name{font-weight:700; font-size:14.5px;}
+  .rem-service{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .rem-amount{font-family:'Sora',sans-serif; font-weight:700; font-size:16px; color:var(--plum);}
+  .rem-date{font-size:11.5px; margin-top:8px; font-weight:600;}
+  .rem-date.overdue{ color:var(--danger); }
+  .rem-date.soon{ color:var(--warn); }
+  .rem-actions{display:flex; gap:8px; margin-top:10px;}
+
+  .section-title{
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    margin:4px 0 12px;
+    color:var(--plum-ink);
+  }
+  .toast{
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+    background:var(--plum-ink); color:#fff; padding:10px 18px; border-radius:30px;
+    font-size:13px; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .toast.show{opacity:1;}
+
+  /* Ledger (Registro diario) */
+  .ledger-stats{display:flex; gap:10px; margin-bottom:16px;}
+  .ledger-stat{
+    flex:1; background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:12px; text-align:center;
+  }
+  .ledger-stat b{ display:block; font-family:'Sora',sans-serif; font-size:18px; color:var(--plum); }
+  .ledger-stat span{ font-size:11px; color:var(--muted); }
+  .ledger-item{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:12px 14px; margin-bottom:9px; display:flex; justify-content:space-between; gap:10px;
+  }
+  .ledger-left{min-width:0;}
+  .ledger-date{font-size:11px; color:var(--muted); font-weight:600;}
+  .ledger-name{font-weight:700; font-size:14px; margin-top:2px;}
+  .ledger-service{font-size:12px; color:var(--muted); margin-top:1px;}
+  .ledger-right{text-align:right; flex-shrink:0;}
+  .ledger-total{font-family:'Sora',sans-serif; font-weight:700; font-size:15px; color:var(--plum);}
+  .ledger-sub{font-size:10.5px; color:var(--muted); margin-top:2px;}
+  .icon-btn{
+    background:none; border:none; color:var(--muted); cursor:pointer;
+    padding:4px; margin-top:6px;
+  }
+
+  /* Ajustes / settings */
+  .settings-block{
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:16px; margin-bottom:16px;
+  }
+  .settings-block h3{
+    font-family:'Sora',sans-serif; font-size:14.5px; margin:0 0 4px;
+  }
+  .settings-block p{ font-size:12px; color:var(--muted); margin:0 0 14px; line-height:1.4; }
+  .service-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0; border-bottom:1px solid var(--line);
+  }
+  .service-item:last-of-type{ border-bottom:none; }
+  .service-name{font-weight:600; font-size:13.5px;}
+  .service-price{font-size:12.5px; color:var(--muted);}
+  .service-actions{display:flex; gap:10px; align-items:center;}
+  .service-actions button{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; }
+  .file-btn{
+    display:block; text-align:center; width:100%; padding:12px; border-radius:12px;
+    border:1.5px dashed var(--line); color:var(--plum); font-weight:600; font-size:13px;
+    cursor:pointer; background:#FFFBF9; margin-top:10px;
+  }
+  .ledger-icons{display:flex; gap:6px; justify-content:flex-end; margin-top:6px;}
+</style>
+
+<div class="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="brand">Salón <span>Rosel</span></div>
+    </div>
+    <div class="hdr-sub">Clientas, anticipos y recordatorios</div>
+    <div class="stats-row">
+      <div class="stat"><b id="statClients">0</b><span>Clientas</span></div>
+      <div class="stat"><b id="statPending">0</b><span>Pagos pendientes</span></div>
+      <div class="stat"><b id="statOwed">$0</b><span>Por cobrar</span></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="clientes">Clientas</div>
+    <div class="tab" data-tab="pago">Pago</div>
+    <div class="tab" data-tab="registro">Registro</div>
+    <div class="tab" data-tab="recordatorios">Recordatorios</div>
+    <div class="tab" data-tab="ajustes">Ajustes</div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="view active" id="view-clientes">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B6E77" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchClients" placeholder="Buscar por nombre o teléfono">
+    </div>
+    <div id="clientList"></div>
+  </div>
+
+  <!-- REGISTRAR PAGO -->
+  <div class="view" id="view-pago">
+    <div class="field">
+      <label>Clienta</label>
+      <select id="payClientSelect">
+        <option value="">Selecciona una clienta...</option>
+      </select>
+      <div class="helper">¿Es nueva? Ve a la pestaña Clientas y agrégala primero, o usa "+ Nueva clienta" abajo.</div>
+    </div>
+    <button class="btn-main secondary" id="quickAddBtn" type="button">+ Nueva clienta rápida</button>
+
+    <div style="height:16px"></div>
+
+    <div class="field">
+      <label>Servicio realizado</label>
+      <select id="payServiceSelect">
+        <option value="">Selecciona un servicio...</option>
+        <option value="__custom__">Otro (escribir servicio)</option>
+      </select>
+    </div>
+    <div class="field" id="payServiceCustomWrap" style="display:none;">
+      <label>Nombre del servicio</label>
+      <input id="payServiceCustom" placeholder="Ej: Corte + Color">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Precio total</label>
+        <input id="payTotal" type="number" inputmode="decimal" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Anticipo recibido</label>
+        <input id="payAdvance" type="number" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+    <div class="remaining-box">
+      <span>Resta por cobrar</span>
+      <b id="remainingPreview">$0</b>
+    </div>
+    <div class="field">
+      <label>Fecha del servicio</label>
+      <input id="payServiceDate" type="date">
+    </div>
+    <div class="field">
+      <label>Recordarme cobrar el ______</label>
+      <input id="payReminderDate" type="date">
+      <div class="helper">Si no queda nada pendiente, este campo no hace falta.</div>
+    </div>
+    <button class="btn-main" id="savePayBtn">Guardar</button>
+  </div>
+
+  <!-- RECORDATORIOS -->
+  <div class="view" id="view-recordatorios">
+    <div id="remindersList"></div>
+  </div>
+
+  <!-- REGISTRO DIARIO (LIBRO DE CONTABILIDAD) -->
+  <div class="view" id="view-registro">
+    <div class="ledger-stats">
+      <div class="ledger-stat"><b id="ledgerToday">$0</b><span>Hoy</span></div>
+      <div class="ledger-stat"><b id="ledgerMonth">$0</b><span>Este mes</span></div>
+      <div class="ledger-stat"><b id="ledgerCount">0</b><span>Servicios</span></div>
+    </div>
+    <div id="ledgerList"></div>
+  </div>
+
+  <!-- AJUSTES: SERVICIOS + RESPALDO -->
+  <div class="view" id="view-ajustes">
+    <div class="settings-block">
+      <h3>Servicios y precios</h3>
+      <p>Agrega aquí tu lista de servicios para elegirlos rápido al registrar un pago.</p>
+      <div id="serviceList"></div>
+      <div class="row2" style="margin-top:10px;">
+        <div class="field" style="margin-bottom:0;">
+          <input id="newServiceName" placeholder="Nombre del servicio">
+        </div>
+        <div class="field" style="margin-bottom:0; max-width:110px;">
+          <input id="newServicePrice" type="number" inputmode="decimal" placeholder="Precio">
+        </div>
+      </div>
+      <button class="btn-main secondary" id="addServiceBtn" style="margin-top:10px;">+ Agregar servicio</button>
+    </div>
+
+    <div class="settings-block">
+      <h3>Copia de seguridad</h3>
+      <p>Descarga un archivo con todas tus clientas, servicios y pagos. Guárdalo en un lugar seguro (Drive, correo) por si cambias de celular.</p>
+      <button class="btn-main" id="downloadBackupBtn">Descargar copia de seguridad</button>
+      <label class="file-btn" for="restoreFileInput">Restaurar desde un archivo de respaldo</label>
+      <input type="file" id="restoreFileInput" accept="application/json" style="display:none;">
+    </div>
+  </div>
+
+  <button class="fab" id="fabAdd" title="Nueva clienta">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-hdr">
+      <div class="sheet-title" id="sheetTitle">Nueva clienta</div>
+      <button class="close-x" id="sheetClose">✕</button>
+    </div>
+    <div id="sheetBody">
+      <div class="field">
+        <label>Nombre</label>
+        <input id="newName" placeholder="Nombre de la clienta">
+      </div>
+      <div class="field">
+        <label>Teléfono (WhatsApp)</label>
+        <input id="newPhone" placeholder="Ej: 0412-1234567">
+      </div>
+      <button class="btn-main" id="saveClientBtn">Guardar clienta</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="invoiceOverlay">
+  <div class="sheet">
+    <div class="sheet-hdr">
+      <div class="sheet-title">Factura</div>
+      <button class="close-x" id="invoiceClose">✕</button>
+    </div>
+    <div style="text-align:center;">
+      <canvas id="invoiceCanvas" width="720" height="1040" style="width:100%; max-width:320px; border-radius:14px; box-shadow:0 4px 18px rgba(90,22,56,.18);"></canvas>
+    </div>
+    <button class="btn-main" id="invoiceDownloadBtn" style="margin-top:16px;">Descargar factura</button>
+    <a class="btn-main secondary" id="invoiceWaLink" style="display:block; text-align:center; text-decoration:none;" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+    <p class="helper" style="text-align:center; margin-top:10px;">WhatsApp no permite adjuntar la imagen automáticamente: se abrirá el chat con el texto de la factura listo, y puedes adjuntar la imagen descargada si quieres.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  let clients = [];
+  let payments = [];
+  let services = [];
+  let editingClientId = null;
+  let quickAddFromPay = false;
+
+  const $ = (id) => document.getElementById(id);
+
+  function showToast(msg){
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  function fmtMoney(n){
+    n = Number(n) || 0;
+    return '$' + n.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  function waLink(phone, text){
+    let digits = (phone || '').replace(/\D/g, '');
+    if (digits.startsWith('0')) digits = '58' + digits.slice(1);
+    else if (!digits.startsWith('58')) digits = '58' + digits;
+    return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(text);
+  }
+
+  const SALON_NAME = 'SALÓN DE BELLEZA ROSEL';
+  const SALON_ADDRESS = 'Urb. Aristides Calvanis, Av. principal casa #23, frente al puente que comunica con Las Eugenias';
+
+  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, align){
+    const words = text.split(' ');
+    let line = '';
+    let lines = [];
+    for (let i = 0; i < words.length; i++){
+      const test = line + words[i] + ' ';
+      if (ctx.measureText(test).width > maxWidth && line !== ''){
+        lines.push(line.trim());
+        line = words[i] + ' ';
+      } else {
+        line = test;
+      }
+    }
+    lines.push(line.trim());
+    lines.forEach((l, idx) => {
+      ctx.textAlign = align || 'left';
+      ctx.fillText(l, x, y + idx * lineHeight);
+    });
+    return lines.length * lineHeight;
+  }
+
+  async function drawInvoice(payment, client){
+    const canvas = $('invoiceCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    try{
+      await Promise.all([
+        document.fonts.load('700 40px Sora'),
+        document.fonts.load('600 24px Sora'),
+        document.fonts.load('400 22px Inter'),
+        document.fonts.load('600 22px Inter'),
+        document.fonts.load('700 46px Sora'),
+      ]);
+    }catch(e){ /* fonts best-effort */ }
+
+    // Background
+    ctx.fillStyle = '#FFFDF9';
+    ctx.fillRect(0, 0, W, H);
+
+    // Header band
+    ctx.fillStyle = '#5A1638';
+    ctx.fillRect(0, 0, W, 240);
+    ctx.beginPath(); ctx.arc(W - 60, 10, 110, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(201,59,107,.35)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(60, 230, 70, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(217,164,65,.3)'; ctx.fill();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 40px Sora, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SALÓN', W/2, 92);
+    ctx.fillStyle = '#D9A441';
+    ctx.fillText('ROSEL', W/2, 138);
+
+    ctx.fillStyle = '#EBC9D3';
+    ctx.font = '400 20px Inter, sans-serif';
+    wrapCanvasText(ctx, SALON_ADDRESS, W/2, 175, W - 120, 26, 'center');
+
+    // "FACTURA" label
+    let y = 300;
+    ctx.fillStyle = '#5A1638';
+    ctx.font = '700 30px Sora, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Factura', 60, y);
+    ctx.strokeStyle = '#D9A441';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(60, y+14); ctx.lineTo(150, y+14); ctx.stroke();
+
+    // Fecha / hora / cliente
+    y += 60;
+    ctx.fillStyle = '#8B6E77';
+    ctx.font = '600 20px Inter, sans-serif';
+    ctx.fillText('Fecha del servicio', 60, y);
+    ctx.fillStyle = '#2B0E1C';
+    ctx.font = '600 24px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(formatDate(payment.serviceDate), W - 60, y);
+
+    y += 42;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8B6E77';
+    ctx.font = '600 20px Inter, sans-serif';
+    ctx.fillText('Hora de emisión', 60, y);
+    ctx.fillStyle = '#2B0E1C';
+    ctx.font = '600 24px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    const now = new Date();
+    ctx.fillText(now.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'}), W - 60, y);
+
+    y += 42;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8B6E77';
+    ctx.font = '600 20px Inter, sans-serif';
+    ctx.fillText('Cliente', 60, y);
+    ctx.fillStyle = '#2B0E1C';
+    ctx.font = '700 24px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(client.name, W - 60, y);
+
+    // Dashed divider
+    y += 34;
+    ctx.strokeStyle = '#F0DCD8';
+    ctx.setLineDash([8, 8]);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-60, y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Service line
+    y += 50;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#2B0E1C';
+    ctx.font = '600 24px Inter, sans-serif';
+    ctx.fillText(payment.service || 'Servicio', 60, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(fmtMoney(payment.total), W - 60, y);
+
+    if (payment.advance > 0){
+      y += 40;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#8B6E77';
+      ctx.font = '500 20px Inter, sans-serif';
+      ctx.fillText('Anticipo pagado', 60, y);
+      ctx.textAlign = 'right';
+      ctx.fillText('- ' + fmtMoney(payment.advance), W - 60, y);
+    }
+    if (payment.remaining > 0){
+      y += 38;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#C6425E';
+      ctx.font = '700 20px Inter, sans-serif';
+      ctx.fillText('Saldo restante', 60, y);
+      ctx.textAlign = 'right';
+      ctx.fillText(fmtMoney(payment.remaining), W - 60, y);
+    }
+
+    // Solid divider
+    y += 34;
+    ctx.strokeStyle = '#5A1638';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-60, y); ctx.stroke();
+
+    // Total
+    y += 60;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#5A1638';
+    ctx.font = '700 28px Sora, sans-serif';
+    ctx.fillText('TOTAL', 60, y);
+    ctx.textAlign = 'right';
+    ctx.font = '800 44px Sora, sans-serif';
+    ctx.fillText(fmtMoney(payment.total), W - 60, y);
+
+    // Footer
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#8B6E77';
+    ctx.font = 'italic 400 20px Inter, sans-serif';
+    ctx.fillText('¡Gracias por tu preferencia!', W/2, H - 90);
+    ctx.font = '400 16px Inter, sans-serif';
+    wrapCanvasText(ctx, SALON_ADDRESS, W/2, H - 50, W - 100, 20, 'center');
+  }
+
+  function invoiceWhatsAppText(payment, client){
+    let msg = `*${SALON_NAME}*\n_${SALON_ADDRESS}_\n\n`;
+    msg += `🧾 *Factura*\n`;
+    msg += `Fecha: ${formatDate(payment.serviceDate)}\n`;
+    msg += `Hora: ${new Date().toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}\n`;
+    msg += `Cliente: ${client.name}\n\n`;
+    msg += `Servicio: ${payment.service}\n`;
+    msg += `Total: ${fmtMoney(payment.total)}\n`;
+    if (payment.advance > 0) msg += `Anticipo pagado: ${fmtMoney(payment.advance)}\n`;
+    if (payment.remaining > 0) msg += `Saldo restante: ${fmtMoney(payment.remaining)}\n`;
+    msg += `\n¡Gracias por tu preferencia! 💕`;
+    return msg;
+  }
+
+  async function showInvoice(paymentId){
+    const p = payments.find(p => p.id === paymentId);
+    if (!p) return;
+    const client = clients.find(c => c.id === p.clientId) || {name:'Clienta', phone:''};
+    await drawInvoice(p, client);
+    $('invoiceWaLink').href = waLink(client.phone, invoiceWhatsAppText(p, client));
+    $('invoiceOverlay').classList.add('show');
+    $('invoiceDownloadBtn').onclick = () => {
+      const canvas = $('invoiceCanvas');
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `factura_${client.name.replace(/\s+/g,'_')}_${p.serviceDate}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+  }
+
+  async function loadData(){
+    try{
+      const c = await window.storage.get('clients', false);
+      clients = c ? JSON.parse(c.value) : [];
+    }catch(e){ clients = []; }
+    try{
+      const p = await window.storage.get('payments', false);
+      payments = p ? JSON.parse(p.value) : [];
+    }catch(e){ payments = []; }
+    try{
+      const s = await window.storage.get('services', false);
+      services = s ? JSON.parse(s.value) : [];
+    }catch(e){ services = []; }
+    render();
+  }
+
+  async function saveClients(){
+    try{ await window.storage.set('clients', JSON.stringify(clients), false); }
+    catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+  }
+  async function savePayments(){
+    try{ await window.storage.set('payments', JSON.stringify(payments), false); }
+    catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+  }
+  async function saveServices(){
+    try{ await window.storage.set('services', JSON.stringify(services), false); }
+    catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+  }
+
+  function clientVisits(clientId){
+    return payments.filter(p => p.clientId === clientId).length;
+  }
+  function clientPending(clientId){
+    return payments.filter(p => p.clientId === clientId && p.remaining > 0);
+  }
+
+  function renderStats(){
+    $('statClients').textContent = clients.length;
+    const pendingPayments = payments.filter(p => p.remaining > 0);
+    $('statPending').textContent = pendingPayments.length;
+    const owed = pendingPayments.reduce((s,p)=> s + p.remaining, 0);
+    $('statOwed').textContent = fmtMoney(owed).replace('.00','');
+  }
+
+  function renderClients(){
+    const q = ($('searchClients').value || '').toLowerCase();
+    const list = $('clientList');
+    const filtered = clients.filter(c =>
+      c.name.toLowerCase().includes(q) || (c.phone||'').includes(q)
+    ).sort((a,b)=> a.name.localeCompare(b.name));
+
+    if (filtered.length === 0){
+      list.innerHTML = '<div class="empty"><b>Todavía no hay clientas</b>Toca el botón rosado de abajo para registrar la primera. Solo necesitas su nombre y teléfono, una sola vez.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(c => {
+      const visits = clientVisits(c.id);
+      const pending = clientPending(c.id);
+      const owed = pending.reduce((s,p)=>s+p.remaining,0);
+      const msg = owed > 0
+        ? `Hola ${c.name}, te escribo del Salón Rosel para recordarte que queda un saldo pendiente de ${fmtMoney(owed)}. ¡Gracias!`
+        : `Hola ${c.name}, te escribo del Salón Rosel. ¿Cómo estás?`;
+      return `
+        <div class="card">
+          <div class="client-row">
+            <div>
+              <div class="client-name">${c.name}</div>
+              <div class="client-phone">${c.phone || 'Sin teléfono'}</div>
+            </div>
+            <div class="visits-pill">${visits} ${visits===1?'visita':'visitas'}</div>
+          </div>
+          ${owed > 0 ? `<div class="balance-tag pend">Debe ${fmtMoney(owed)}</div>` : ''}
+          <div class="client-actions">
+            <a class="btn-mini wa" href="${waLink(c.phone, msg)}" target="_blank" rel="noopener">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 003.7 17.2L2 22l4.9-1.6A11 11 0 1020.5 3.5zM12 20a8 8 0 01-4.1-1.1l-.3-.2-3 1 1-2.9-.2-.3A8 8 0 1112 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.2 0-.3 0-.4-.1-.1-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2 1 2.4c.1.2 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.6.2 1.1.1 1.5-.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1z"/></svg>
+              WhatsApp
+            </a>
+            <button class="btn-mini" onclick="RoselApp.editClient('${c.id}')">Editar</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderPaySelect(){
+    const sel = $('payClientSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Selecciona una clienta...</option>' +
+      clients.slice().sort((a,b)=>a.name.localeCompare(b.name))
+        .map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    sel.value = current;
+  }
+
+  function renderServiceSelect(){
+    const sel = $('payServiceSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Selecciona un servicio...</option>' +
+      services.slice().sort((a,b)=>a.name.localeCompare(b.name))
+        .map(s => `<option value="${s.id}" data-price="${s.price}">${s.name} — ${fmtMoney(s.price)}</option>`).join('') +
+      '<option value="__custom__">Otro (escribir servicio)</option>';
+    sel.value = current;
+  }
+
+  function renderServices(){
+    const list = $('serviceList');
+    if (services.length === 0){
+      list.innerHTML = '<p style="color:var(--muted); font-size:12.5px;">Aún no tienes servicios guardados.</p>';
+      return;
+    }
+    list.innerHTML = services.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(s => `
+      <div class="service-item">
+        <div>
+          <div class="service-name">${s.name}</div>
+          <div class="service-price">${fmtMoney(s.price)}</div>
+        </div>
+        <div class="service-actions">
+          <button onclick="RoselApp.editService('${s.id}')">Editar</button>
+          <button onclick="RoselApp.deleteService('${s.id}')">Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderLedger(){
+    const list = $('ledgerList');
+    const sorted = payments.slice().sort((a,b) => (b.serviceDate||'').localeCompare(a.serviceDate||''));
+
+    if (sorted.length === 0){
+      list.innerHTML = '<div class="empty"><b>Todavía no hay servicios registrados</b>Cuando registres un pago en la pestaña "Pago", aparecerá aquí tu libro diario.</div>';
+    } else {
+      list.innerHTML = sorted.map(p => {
+        const client = clients.find(c => c.id === p.clientId) || {name:'Clienta eliminada'};
+        return `
+          <div class="ledger-item">
+            <div class="ledger-left">
+              <div class="ledger-date">${formatDate(p.serviceDate)}</div>
+              <div class="ledger-name">${client.name}</div>
+              <div class="ledger-service">${p.service || 'Servicio'}</div>
+            </div>
+            <div class="ledger-right">
+              <div class="ledger-total">${fmtMoney(p.total)}</div>
+              <div class="ledger-sub">${p.remaining > 0 ? 'Debe ' + fmtMoney(p.remaining) : 'Pagado completo'}</div>
+              <div class="ledger-icons">
+                <button class="icon-btn" title="Factura" onclick="RoselApp.showInvoice('${p.id}')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+                </button>
+                <button class="icon-btn" title="Eliminar" onclick="RoselApp.deletePayment('${p.id}')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0l1 14h8l1-14"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    const todayStr = new Date().toISOString().slice(0,10);
+    const monthStr = todayStr.slice(0,7);
+    const todayTotal = payments.filter(p => p.serviceDate === todayStr).reduce((s,p)=>s+p.total,0);
+    const monthTotal = payments.filter(p => (p.serviceDate||'').startsWith(monthStr)).reduce((s,p)=>s+p.total,0);
+    $('ledgerToday').textContent = fmtMoney(todayTotal).replace('.00','');
+    $('ledgerMonth').textContent = fmtMoney(monthTotal).replace('.00','');
+    $('ledgerCount').textContent = payments.length;
+  }
+
+  function renderReminders(){
+    const list = $('remindersList');
+    const pending = payments.filter(p => p.remaining > 0)
+      .sort((a,b) => (a.reminderDate||'9999').localeCompare(b.reminderDate||'9999'));
+
+    if (pending.length === 0){
+      list.innerHTML = '<div class="empty"><b>Sin pagos pendientes</b>Cuando registres un anticipo con saldo restante, aparecerá aquí para que no se te olvide cobrarlo.</div>';
+      return;
+    }
+
+    const today = new Date().toISOString().slice(0,10);
+
+    list.innerHTML = pending.map(p => {
+      const client = clients.find(c => c.id === p.clientId) || {name:'Clienta eliminada', phone:''};
+      const overdue = p.reminderDate && p.reminderDate < today;
+      const soon = p.reminderDate && !overdue && p.reminderDate <= addDays(today, 3);
+      const msg = `Hola ${client.name}, te escribo del Salón Rosel para recordarte que queda un saldo pendiente de ${fmtMoney(p.remaining)} por "${p.service}". ¡Gracias!`;
+      return `
+        <div class="rem-item ${overdue ? 'overdue':''}">
+          <div class="rem-top">
+            <div>
+              <div class="rem-name">${client.name}</div>
+              <div class="rem-service">${p.service || 'Servicio'}</div>
+            </div>
+            <div class="rem-amount">${fmtMoney(p.remaining)}</div>
+          </div>
+          <div class="rem-date ${overdue?'overdue':(soon?'soon':'')}">
+            ${p.reminderDate ? (overdue ? 'Atrasado · ' : 'Cobrar el ') + formatDate(p.reminderDate) : 'Sin fecha de recordatorio'}
+          </div>
+          <div class="rem-actions">
+            <a class="btn-mini wa" href="${waLink(client.phone, msg)}" target="_blank" rel="noopener">Recordar por WhatsApp</a>
+            <button class="btn-mini" onclick="RoselApp.showInvoice('${p.id}')">Factura</button>
+            <button class="btn-mini" onclick="RoselApp.markPaid('${p.id}')">Marcar cobrado</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function addDays(dateStr, n){
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0,10);
+  }
+  function formatDate(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('es-VE', {day:'numeric', month:'short'});
+  }
+
+  function render(){
+    renderStats();
+    renderClients();
+    renderPaySelect();
+    renderServiceSelect();
+    renderServices();
+    renderLedger();
+    renderReminders();
+  }
+
+  function handleServiceSelectChange(){
+    const sel = $('payServiceSelect');
+    const val = sel.value;
+    const customWrap = $('payServiceCustomWrap');
+    if (val === '__custom__'){
+      customWrap.style.display = 'block';
+      $('payServiceCustom').focus();
+    } else {
+      customWrap.style.display = 'none';
+      const opt = sel.options[sel.selectedIndex];
+      const price = opt ? opt.dataset.price : null;
+      if (price){
+        $('payTotal').value = price;
+        updateRemainingPreview();
+      }
+    }
+  }
+
+  function updateRemainingPreview(){
+    const total = parseFloat($('payTotal').value) || 0;
+    const adv = parseFloat($('payAdvance').value) || 0;
+    const rem = Math.max(total - adv, 0);
+    $('remainingPreview').textContent = fmtMoney(rem);
+  }
+
+  function openSheet(mode, client){
+    editingClientId = client ? client.id : null;
+    $('sheetTitle').textContent = client ? 'Editar clienta' : 'Nueva clienta';
+    $('newName').value = client ? client.name : '';
+    $('newPhone').value = client ? client.phone : '';
+    $('overlay').classList.add('show');
+  }
+  function closeSheet(){
+    $('overlay').classList.remove('show');
+  }
+
+  async function saveClient(){
+    const name = $('newName').value.trim();
+    const phone = $('newPhone').value.trim();
+    if (!name){ showToast('Escribe el nombre de la clienta'); return; }
+    let newId = null;
+    if (editingClientId){
+      const c = clients.find(c => c.id === editingClientId);
+      c.name = name; c.phone = phone;
+    } else {
+      newId = 'c_' + Date.now();
+      clients.push({ id: newId, name, phone, createdAt: new Date().toISOString() });
+    }
+    await saveClients();
+    closeSheet();
+    render();
+    if (newId && quickAddFromPay){
+      $('payClientSelect').value = newId;
+      quickAddFromPay = false;
+    }
+    showToast('Clienta guardada');
+  }
+
+  async function savePayment(){
+    const clientId = $('payClientSelect').value;
+    const sel = $('payServiceSelect');
+    let service = '';
+    if (sel.value === '__custom__'){
+      service = $('payServiceCustom').value.trim();
+    } else if (sel.value){
+      const svc = services.find(s => s.id === sel.value);
+      service = svc ? svc.name : '';
+    }
+    const total = parseFloat($('payTotal').value) || 0;
+    const advance = parseFloat($('payAdvance').value) || 0;
+    const serviceDate = $('payServiceDate').value;
+    const reminderDate = $('payReminderDate').value;
+
+    if (!clientId){ showToast('Selecciona una clienta'); return; }
+    if (!service){ showToast('Escribe el servicio realizado'); return; }
+    if (total <= 0){ showToast('Escribe el precio total'); return; }
+
+    const remaining = Math.max(total - advance, 0);
+    payments.push({
+      id: 'p_' + Date.now(),
+      clientId, service, total, advance, remaining,
+      serviceDate: serviceDate || new Date().toISOString().slice(0,10),
+      reminderDate: remaining > 0 ? reminderDate : '',
+    });
+    await savePayments();
+
+    $('payServiceSelect').value = '';
+    $('payServiceCustom').value = '';
+    $('payServiceCustomWrap').style.display = 'none';
+    $('payTotal').value = '';
+    $('payAdvance').value = '';
+    $('payReminderDate').value = '';
+    updateRemainingPreview();
+
+    render();
+    showToast('Pago registrado');
+  }
+
+  async function markPaid(paymentId){
+    const p = payments.find(p => p.id === paymentId);
+    if (p){ p.remaining = 0; p.reminderDate = ''; }
+    await savePayments();
+    render();
+    showToast('Marcado como cobrado');
+  }
+
+  async function deletePayment(paymentId){
+    if (!confirm('¿Eliminar este registro del libro diario? No se puede deshacer.')) return;
+    payments = payments.filter(p => p.id !== paymentId);
+    await savePayments();
+    render();
+    showToast('Registro eliminado');
+  }
+
+  async function addService(){
+    const name = $('newServiceName').value.trim();
+    const price = parseFloat($('newServicePrice').value) || 0;
+    if (!name){ showToast('Escribe el nombre del servicio'); return; }
+    services.push({ id: 's_' + Date.now(), name, price });
+    await saveServices();
+    $('newServiceName').value = '';
+    $('newServicePrice').value = '';
+    render();
+    showToast('Servicio agregado');
+  }
+
+  async function editService(serviceId){
+    const s = services.find(s => s.id === serviceId);
+    if (!s) return;
+    const newName = prompt('Nombre del servicio:', s.name);
+    if (newName === null) return;
+    const newPriceStr = prompt('Precio:', s.price);
+    if (newPriceStr === null) return;
+    s.name = newName.trim() || s.name;
+    s.price = parseFloat(newPriceStr) || s.price;
+    await saveServices();
+    render();
+    showToast('Servicio actualizado');
+  }
+
+  async function deleteService(serviceId){
+    if (!confirm('¿Eliminar este servicio de la lista?')) return;
+    services = services.filter(s => s.id !== serviceId);
+    await saveServices();
+    render();
+    showToast('Servicio eliminado');
+  }
+
+  function downloadBackup(){
+    const data = {
+      exportedAt: new Date().toISOString(),
+      clients, payments, services
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `respaldo_salon_rosel_${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Copia de seguridad descargada');
+  }
+
+  function restoreBackup(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try{
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data.clients) || !Array.isArray(data.payments)){
+          showToast('Ese archivo no parece un respaldo válido');
+          return;
+        }
+        if (!confirm('Esto reemplazará los datos actuales de la app con los del archivo. ¿Continuar?')) return;
+        clients = data.clients || [];
+        payments = data.payments || [];
+        services = data.services || [];
+        await saveClients();
+        await savePayments();
+        await saveServices();
+        render();
+        showToast('Copia de seguridad restaurada');
+      }catch(err){
+        showToast('No se pudo leer el archivo');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function editClient(clientId){
+    const c = clients.find(c => c.id === clientId);
+    openSheet('edit', c);
+  }
+
+  function switchTab(tab){
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    $('view-' + tab).classList.add('active');
+  }
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => switchTab(t.dataset.tab));
+  });
+  $('fabAdd').addEventListener('click', () => openSheet('new', null));
+  $('quickAddBtn').addEventListener('click', () => { quickAddFromPay = true; openSheet('new', null); });
+  $('sheetClose').addEventListener('click', closeSheet);
+  $('overlay').addEventListener('click', (e) => { if (e.target.id === 'overlay') closeSheet(); });
+  $('invoiceClose').addEventListener('click', () => $('invoiceOverlay').classList.remove('show'));
+  $('invoiceOverlay').addEventListener('click', (e) => { if (e.target.id === 'invoiceOverlay') $('invoiceOverlay').classList.remove('show'); });
+  $('saveClientBtn').addEventListener('click', saveClient);
+  $('savePayBtn').addEventListener('click', savePayment);
+  $('searchClients').addEventListener('input', renderClients);
+  $('payTotal').addEventListener('input', updateRemainingPreview);
+  $('payAdvance').addEventListener('input', updateRemainingPreview);
+  $('payServiceSelect').addEventListener('change', handleServiceSelectChange);
+  $('addServiceBtn').addEventListener('click', addService);
+  $('downloadBackupBtn').addEventListener('click', downloadBackup);
+  $('restoreFileInput').addEventListener('change', (e) => restoreBackup(e.target.files[0]));
+
+  window.RoselApp = { editClient, markPaid, deletePayment, editService, deleteService, showInvoice };
+
+  loadData();
+})();
+</script>
