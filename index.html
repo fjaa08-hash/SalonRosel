@@ -1,3 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Salón Rosel</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5A1638">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rosel">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -38,7 +52,7 @@
   /* Header */
   .hdr{
     padding:26px 20px 18px;
-    background:var(--plum);
+    background:linear-gradient(135deg, #6A1B45 0%, var(--plum) 45%, #8A2555 100%);
     color:#fff;
     border-radius:0 0 28px 28px;
     position:relative;
@@ -113,7 +127,7 @@
     transition:background .15s, color .15s;
   }
   .tab.active{
-    background:var(--plum);
+    background:linear-gradient(120deg, var(--plum), var(--rose));
     color:#fff;
   }
 
@@ -196,7 +210,7 @@
     bottom:22px;
     width:56px; height:56px;
     border-radius:50%;
-    background:var(--rose);
+    background:linear-gradient(135deg, var(--rose), var(--gold));
     color:#fff;
     display:flex; align-items:center; justify-content:center;
     box-shadow:0 8px 20px rgba(201,59,107,.45);
@@ -236,13 +250,40 @@
     margin-bottom:16px;
   }
   .remaining-box b{ font-family:'Sora',sans-serif; font-size:19px; color:var(--plum); }
+  .total-box{ background:#FDEAD4; }
+  .total-box b{ color:#B5761F; }
+
+  .item-row{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px;
+    margin-bottom:8px;
+  }
+  .item-row-main{ display:flex; gap:8px; align-items:center; }
+  .item-row-main select{
+    flex:1.4; padding:9px 8px; border-radius:9px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:13px; background:#fff; color:var(--plum-ink);
+  }
+  .item-row-main .item-price{
+    flex:0.8; padding:9px 8px; border-radius:9px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:13px; min-width:0;
+  }
+  .item-remove{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%;
+    background:#FBE7EC; color:var(--danger); border:none; cursor:pointer; font-size:13px;
+  }
+  .item-service-custom{
+    width:100%; margin-top:8px; padding:9px 10px; border-radius:9px;
+    border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:13px;
+  }
 
   .btn-main{
     width:100%;
     padding:14px;
     border-radius:12px;
     border:none;
-    background:var(--plum);
+    background:linear-gradient(120deg, var(--plum), #8A2555);
     color:#fff;
     font-family:'Sora',sans-serif;
     font-weight:700;
@@ -352,12 +393,29 @@
     cursor:pointer; background:#FFFBF9; margin-top:10px;
   }
   .ledger-icons{display:flex; gap:6px; justify-content:flex-end; margin-top:6px;}
+
+  .install-btn{
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.35);
+    color:#fff;
+    font-size:11.5px;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    display:none;
+    align-items:center;
+    gap:5px;
+  }
 </style>
+</head>
+<body>
 
 <div class="app">
   <div class="hdr">
     <div class="hdr-top">
       <div class="brand">Salón <span>Rosel</span></div>
+      <button class="install-btn" id="installBtn">📲 Instalar app</button>
     </div>
     <div class="hdr-sub">Clientas, anticipos y recordatorios</div>
     <div class="stats-row">
@@ -398,25 +456,18 @@
     <div style="height:16px"></div>
 
     <div class="field">
-      <label>Servicio realizado</label>
-      <select id="payServiceSelect">
-        <option value="">Selecciona un servicio...</option>
-        <option value="__custom__">Otro (escribir servicio)</option>
-      </select>
+      <label>Servicios realizados</label>
+      <div id="itemsContainer"></div>
+      <button type="button" class="btn-main secondary" id="addItemBtn" style="margin-top:4px;">+ Agregar otro servicio</button>
     </div>
-    <div class="field" id="payServiceCustomWrap" style="display:none;">
-      <label>Nombre del servicio</label>
-      <input id="payServiceCustom" placeholder="Ej: Corte + Color">
+
+    <div class="remaining-box total-box">
+      <span>Total del servicio</span>
+      <b id="totalPreview">$0</b>
     </div>
-    <div class="row2">
-      <div class="field">
-        <label>Precio total</label>
-        <input id="payTotal" type="number" inputmode="decimal" placeholder="0">
-      </div>
-      <div class="field">
-        <label>Anticipo recibido</label>
-        <input id="payAdvance" type="number" inputmode="decimal" placeholder="0">
-      </div>
+    <div class="field">
+      <label>Anticipo recibido</label>
+      <input id="payAdvance" type="number" inputmode="decimal" placeholder="0">
     </div>
     <div class="remaining-box">
       <span>Resta por cobrar</span>
@@ -570,6 +621,100 @@
     return '$' + n.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
 
+  function serviceOptionsHTML(selectedId){
+    return '<option value="">Selecciona un servicio...</option>' +
+      services.slice().sort((a,b)=>a.name.localeCompare(b.name))
+        .map(s => `<option value="${s.id}" data-price="${s.price}" ${s.id===selectedId?'selected':''}>${s.name} — ${fmtMoney(s.price)}</option>`).join('') +
+      `<option value="__custom__" ${selectedId==='__custom__'?'selected':''}>Otro (escribir servicio)</option>`;
+  }
+
+  function addItemRow(prefill){
+    const container = $('itemsContainer');
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    const selId = prefill ? prefill.serviceId : undefined;
+    div.innerHTML = `
+      <div class="item-row-main">
+        <select class="item-service">${serviceOptionsHTML(selId)}</select>
+        <input class="item-price" type="number" inputmode="decimal" placeholder="Precio" value="${prefill && prefill.price != null ? prefill.price : ''}">
+        <button type="button" class="item-remove" title="Quitar">✕</button>
+      </div>
+      <input class="item-service-custom" placeholder="Nombre del servicio" style="display:${selId==='__custom__' ? 'block':'none'};" value="${prefill && prefill.customName ? prefill.customName : ''}">
+    `;
+    container.appendChild(div);
+
+    const sel = div.querySelector('.item-service');
+    const customInput = div.querySelector('.item-service-custom');
+    const priceInput = div.querySelector('.item-price');
+
+    sel.addEventListener('change', () => {
+      if (sel.value === '__custom__'){
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        const opt = sel.options[sel.selectedIndex];
+        const price = opt ? opt.dataset.price : null;
+        if (price){ priceInput.value = price; }
+      }
+      updateItemsTotal();
+    });
+    priceInput.addEventListener('input', updateItemsTotal);
+    div.querySelector('.item-remove').addEventListener('click', () => {
+      div.remove();
+      updateItemsTotal();
+    });
+
+    return div;
+  }
+
+  function ensureAtLeastOneRow(){
+    if ($('itemsContainer').children.length === 0){
+      addItemRow();
+    }
+  }
+
+  function collectItems(){
+    const rows = document.querySelectorAll('#itemsContainer .item-row');
+    const items = [];
+    rows.forEach(row => {
+      const sel = row.querySelector('.item-service');
+      const customInput = row.querySelector('.item-service-custom');
+      const priceInput = row.querySelector('.item-price');
+      let name = '';
+      if (sel.value === '__custom__'){
+        name = customInput.value.trim();
+      } else if (sel.value){
+        const svc = services.find(s => s.id === sel.value);
+        name = svc ? svc.name : '';
+      }
+      const price = parseFloat(priceInput.value) || 0;
+      if (name && price > 0){
+        items.push({ name, price });
+      }
+    });
+    return items;
+  }
+
+  function computeItemsTotal(){
+    return collectItems().reduce((s,i)=>s+i.price, 0);
+  }
+
+  function updateItemsTotal(){
+    const total = computeItemsTotal();
+    $('totalPreview').textContent = fmtMoney(total);
+    updateRemainingPreview();
+  }
+
+  function paymentItems(p){
+    if (p.items && p.items.length) return p.items;
+    if (p.service) return [{ name: p.service, price: p.total }];
+    return [];
+  }
+  function paymentServiceSummary(p){
+    return paymentItems(p).map(i => i.name).join(', ') || 'Servicio';
+  }
+
   function waLink(phone, text){
     let digits = (phone || '').replace(/\D/g, '');
     if (digits.startsWith('0')) digits = '58' + digits.slice(1);
@@ -603,6 +748,8 @@
 
   async function drawInvoice(payment, client){
     const canvas = $('invoiceCanvas');
+    const items = paymentItems(payment);
+    canvas.height = 900 + Math.max(items.length - 1, 0) * 40;
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
 
@@ -688,14 +835,17 @@
     ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-60, y); ctx.stroke();
     ctx.setLineDash([]);
 
-    // Service line
+    // Service lines (uno o varios servicios)
     y += 50;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#2B0E1C';
-    ctx.font = '600 24px Inter, sans-serif';
-    ctx.fillText(payment.service || 'Servicio', 60, y);
-    ctx.textAlign = 'right';
-    ctx.fillText(fmtMoney(payment.total), W - 60, y);
+    items.forEach((item, idx) => {
+      if (idx > 0) y += 40;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#2B0E1C';
+      ctx.font = '600 24px Inter, sans-serif';
+      ctx.fillText(item.name, 60, y);
+      ctx.textAlign = 'right';
+      ctx.fillText(fmtMoney(item.price), W - 60, y);
+    });
 
     if (payment.advance > 0){
       y += 40;
@@ -742,13 +892,16 @@
   }
 
   function invoiceWhatsAppText(payment, client){
+    const items = paymentItems(payment);
     let msg = `*${SALON_NAME}*\n_${SALON_ADDRESS}_\n\n`;
     msg += `🧾 *Factura*\n`;
     msg += `Fecha: ${formatDate(payment.serviceDate)}\n`;
     msg += `Hora: ${new Date().toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}\n`;
     msg += `Cliente: ${client.name}\n\n`;
-    msg += `Servicio: ${payment.service}\n`;
-    msg += `Total: ${fmtMoney(payment.total)}\n`;
+    items.forEach(item => {
+      msg += `${item.name}: ${fmtMoney(item.price)}\n`;
+    });
+    msg += `\nTotal: ${fmtMoney(payment.total)}\n`;
     if (payment.advance > 0) msg += `Anticipo pagado: ${fmtMoney(payment.advance)}\n`;
     if (payment.remaining > 0) msg += `Saldo restante: ${fmtMoney(payment.remaining)}\n`;
     msg += `\n¡Gracias por tu preferencia! 💕`;
@@ -866,16 +1019,6 @@
     sel.value = current;
   }
 
-  function renderServiceSelect(){
-    const sel = $('payServiceSelect');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Selecciona un servicio...</option>' +
-      services.slice().sort((a,b)=>a.name.localeCompare(b.name))
-        .map(s => `<option value="${s.id}" data-price="${s.price}">${s.name} — ${fmtMoney(s.price)}</option>`).join('') +
-      '<option value="__custom__">Otro (escribir servicio)</option>';
-    sel.value = current;
-  }
-
   function renderServices(){
     const list = $('serviceList');
     if (services.length === 0){
@@ -910,7 +1053,7 @@
             <div class="ledger-left">
               <div class="ledger-date">${formatDate(p.serviceDate)}</div>
               <div class="ledger-name">${client.name}</div>
-              <div class="ledger-service">${p.service || 'Servicio'}</div>
+              <div class="ledger-service">${paymentServiceSummary(p)}</div>
             </div>
             <div class="ledger-right">
               <div class="ledger-total">${fmtMoney(p.total)}</div>
@@ -953,13 +1096,13 @@
       const client = clients.find(c => c.id === p.clientId) || {name:'Clienta eliminada', phone:''};
       const overdue = p.reminderDate && p.reminderDate < today;
       const soon = p.reminderDate && !overdue && p.reminderDate <= addDays(today, 3);
-      const msg = `Hola ${client.name}, te escribo del Salón Rosel para recordarte que queda un saldo pendiente de ${fmtMoney(p.remaining)} por "${p.service}". ¡Gracias!`;
+      const msg = `Hola ${client.name}, te escribo del Salón Rosel para recordarte que queda un saldo pendiente de ${fmtMoney(p.remaining)} por "${paymentServiceSummary(p)}". ¡Gracias!`;
       return `
         <div class="rem-item ${overdue ? 'overdue':''}">
           <div class="rem-top">
             <div>
               <div class="rem-name">${client.name}</div>
-              <div class="rem-service">${p.service || 'Servicio'}</div>
+              <div class="rem-service">${paymentServiceSummary(p)}</div>
             </div>
             <div class="rem-amount">${fmtMoney(p.remaining)}</div>
           </div>
@@ -989,32 +1132,15 @@
     renderStats();
     renderClients();
     renderPaySelect();
-    renderServiceSelect();
     renderServices();
     renderLedger();
     renderReminders();
   }
 
-  function handleServiceSelectChange(){
-    const sel = $('payServiceSelect');
-    const val = sel.value;
-    const customWrap = $('payServiceCustomWrap');
-    if (val === '__custom__'){
-      customWrap.style.display = 'block';
-      $('payServiceCustom').focus();
-    } else {
-      customWrap.style.display = 'none';
-      const opt = sel.options[sel.selectedIndex];
-      const price = opt ? opt.dataset.price : null;
-      if (price){
-        $('payTotal').value = price;
-        updateRemainingPreview();
-      }
-    }
-  }
+
 
   function updateRemainingPreview(){
-    const total = parseFloat($('payTotal').value) || 0;
+    const total = computeItemsTotal();
     const adv = parseFloat($('payAdvance').value) || 0;
     const rem = Math.max(total - adv, 0);
     $('remainingPreview').textContent = fmtMoney(rem);
@@ -1055,39 +1181,29 @@
 
   async function savePayment(){
     const clientId = $('payClientSelect').value;
-    const sel = $('payServiceSelect');
-    let service = '';
-    if (sel.value === '__custom__'){
-      service = $('payServiceCustom').value.trim();
-    } else if (sel.value){
-      const svc = services.find(s => s.id === sel.value);
-      service = svc ? svc.name : '';
-    }
-    const total = parseFloat($('payTotal').value) || 0;
+    const items = collectItems();
+    const total = items.reduce((s,i)=>s+i.price, 0);
     const advance = parseFloat($('payAdvance').value) || 0;
     const serviceDate = $('payServiceDate').value;
     const reminderDate = $('payReminderDate').value;
 
     if (!clientId){ showToast('Selecciona una clienta'); return; }
-    if (!service){ showToast('Escribe el servicio realizado'); return; }
-    if (total <= 0){ showToast('Escribe el precio total'); return; }
+    if (items.length === 0){ showToast('Agrega al menos un servicio con su precio'); return; }
 
     const remaining = Math.max(total - advance, 0);
     payments.push({
       id: 'p_' + Date.now(),
-      clientId, service, total, advance, remaining,
+      clientId, items, total, advance, remaining,
       serviceDate: serviceDate || new Date().toISOString().slice(0,10),
       reminderDate: remaining > 0 ? reminderDate : '',
     });
     await savePayments();
 
-    $('payServiceSelect').value = '';
-    $('payServiceCustom').value = '';
-    $('payServiceCustomWrap').style.display = 'none';
-    $('payTotal').value = '';
+    $('itemsContainer').innerHTML = '';
+    addItemRow();
     $('payAdvance').value = '';
     $('payReminderDate').value = '';
-    updateRemainingPreview();
+    updateItemsTotal();
 
     render();
     showToast('Pago registrado');
@@ -1196,6 +1312,7 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     $('view-' + tab).classList.add('active');
+    if (tab === 'pago') ensureAtLeastOneRow();
   }
 
   document.querySelectorAll('.tab').forEach(t => {
@@ -1210,15 +1327,41 @@
   $('saveClientBtn').addEventListener('click', saveClient);
   $('savePayBtn').addEventListener('click', savePayment);
   $('searchClients').addEventListener('input', renderClients);
-  $('payTotal').addEventListener('input', updateRemainingPreview);
   $('payAdvance').addEventListener('input', updateRemainingPreview);
-  $('payServiceSelect').addEventListener('change', handleServiceSelectChange);
   $('addServiceBtn').addEventListener('click', addService);
+  $('addItemBtn').addEventListener('click', () => addItemRow());
   $('downloadBackupBtn').addEventListener('click', downloadBackup);
   $('restoreFileInput').addEventListener('change', (e) => restoreBackup(e.target.files[0]));
 
   window.RoselApp = { editClient, markPaid, deletePayment, editService, deleteService, showInvoice };
 
+  // Instalación como app (PWA)
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    $('installBtn').style.display = 'flex';
+  });
+  $('installBtn').addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    $('installBtn').style.display = 'none';
+  });
+  window.addEventListener('appinstalled', () => {
+    $('installBtn').style.display = 'none';
+  });
+
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  ensureAtLeastOneRow();
   loadData();
 })();
 </script>
+</body>
+</html>
