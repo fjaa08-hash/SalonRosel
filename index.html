@@ -519,6 +519,37 @@
 
 <script>
 (function(){
+  // Si la app se abre fuera del entorno de Claude (por ejemplo, publicada en
+  // GitHub Pages), window.storage no existe. Usamos localStorage del navegador
+  // como respaldo automático, con la misma forma de respuesta para no tocar
+  // el resto del código.
+  if (!window.storage){
+    window.storage = {
+      async get(key){
+        try{
+          const v = localStorage.getItem(key);
+          return v === null ? null : { key, value: v };
+        }catch(e){ return null; }
+      },
+      async set(key, value){
+        try{
+          localStorage.setItem(key, value);
+          return { key, value };
+        }catch(e){ return null; }
+      },
+      async delete(key){
+        try{ localStorage.removeItem(key); return { key, deleted: true }; }
+        catch(e){ return null; }
+      },
+      async list(prefix){
+        try{
+          const keys = Object.keys(localStorage).filter(k => !prefix || k.startsWith(prefix));
+          return { keys, prefix };
+        }catch(e){ return null; }
+      }
+    };
+  }
+
   let clients = [];
   let payments = [];
   let services = [];
