@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rosel-app-v1';
+const CACHE_NAME = 'rosel-app-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -18,7 +18,24 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  // La página principal se pide siempre a internet primero, para que
+  // cualquier actualización se vea de inmediato. Si no hay internet,
+  // usa la última copia guardada.
+  if (req.mode === 'navigate' || req.url.endsWith('.html')) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+  // Los archivos que casi no cambian (íconos, manifest) sí se sirven
+  // de la copia guardada primero, para que la app abra rápido.
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).catch(() => cached))
+    caches.match(req).then((cached) => cached || fetch(req))
   );
 });
