@@ -1,7 +1,7 @@
 {
   "name": "Salón Rosel",
   "short_name": "Rosel",
-  "description": "Clientas, pagos anticipados y facturas del Salón de Belleza Rosel",
+  "description": "Clientas, pagos anticipados, inventario y facturas del Salón de Belleza Rosel",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
