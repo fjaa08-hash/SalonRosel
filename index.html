@@ -113,12 +113,17 @@
     border-radius:14px;
     padding:4px;
     box-shadow:0 2px 10px rgba(90,22,56,.06);
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
   }
+  .tabs::-webkit-scrollbar{ display:none; }
   .tab{
-    flex:1;
+    flex:0 0 auto;
+    white-space:nowrap;
     text-align:center;
-    padding:9px 2px;
-    font-size:10.5px;
+    padding:9px 14px;
+    font-size:11.5px;
     font-weight:600;
     color:var(--muted);
     border-radius:11px;
@@ -260,17 +265,23 @@
     padding:10px;
     margin-bottom:8px;
   }
-  .item-row-main{ display:flex; gap:8px; align-items:center; }
+  .item-row-main{ display:flex; gap:6px; align-items:center; }
   .item-row-main select{
-    flex:1.4; padding:9px 8px; border-radius:9px; border:1px solid var(--line);
-    font-family:'Inter',sans-serif; font-size:13px; background:#fff; color:var(--plum-ink);
+    flex:1.6; padding:9px 6px; border-radius:9px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:12.5px; background:#fff; color:var(--plum-ink); min-width:0;
+  }
+  .item-row-main .item-qty{
+    flex:0 0 40px; padding:9px 4px; border-radius:9px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:13px; text-align:center; min-width:0;
   }
   .item-row-main .item-price{
-    flex:0.8; padding:9px 8px; border-radius:9px; border:1px solid var(--line);
+    flex:0.75; padding:9px 6px; border-radius:9px; border:1px solid var(--line);
     font-family:'Inter',sans-serif; font-size:13px; min-width:0;
   }
+  .item-row-sub{ display:flex; justify-content:space-between; margin-top:4px; padding:0 2px;}
+  .item-row-sub span{ font-size:10.5px; color:var(--muted); }
   .item-remove{
-    flex-shrink:0; width:30px; height:30px; border-radius:50%;
+    flex-shrink:0; width:28px; height:28px; border-radius:50%;
     background:#FBE7EC; color:var(--danger); border:none; cursor:pointer; font-size:13px;
   }
   .item-service-custom{
@@ -385,6 +396,12 @@
   .service-item:last-of-type{ border-bottom:none; }
   .service-name{font-weight:600; font-size:13.5px;}
   .service-price{font-size:12.5px; color:var(--muted);}
+  .stock-badge{
+    display:inline-block; margin-left:8px; font-size:10.5px; font-weight:700;
+    padding:2px 8px; border-radius:10px; background:#EAF7EE; color:var(--ok);
+  }
+  .stock-badge.low{ background:#FCEFDD; color:var(--warn); }
+  .stock-badge.out{ background:#FBE7EC; color:var(--danger); }
   .service-actions{display:flex; gap:10px; align-items:center;}
   .service-actions button{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; }
   .file-btn{
@@ -408,6 +425,7 @@
     gap:5px;
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -417,7 +435,7 @@
       <div class="brand">Salón <span>Rosel</span></div>
       <button class="install-btn" id="installBtn">📲 Instalar app</button>
     </div>
-    <div class="hdr-sub">Clientas, anticipos y recordatorios</div>
+    <div class="hdr-sub">Clientas, anticipos y recordatorios <span id="syncBadge" style="display:none; margin-left:6px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; vertical-align:middle;"></span></div>
     <div class="stats-row">
       <div class="stat"><b id="statClients">0</b><span>Clientas</span></div>
       <div class="stat"><b id="statPending">0</b><span>Pagos pendientes</span></div>
@@ -429,6 +447,7 @@
     <div class="tab active" data-tab="clientes">Clientas</div>
     <div class="tab" data-tab="pago">Pago</div>
     <div class="tab" data-tab="registro">Registro</div>
+    <div class="tab" data-tab="tienda">Tienda</div>
     <div class="tab" data-tab="recordatorios">Recordatorios</div>
     <div class="tab" data-tab="ajustes">Ajustes</div>
   </div>
@@ -456,13 +475,13 @@
     <div style="height:16px"></div>
 
     <div class="field">
-      <label>Servicios realizados</label>
+      <label>Servicios o productos</label>
       <div id="itemsContainer"></div>
-      <button type="button" class="btn-main secondary" id="addItemBtn" style="margin-top:4px;">+ Agregar otro servicio</button>
+      <button type="button" class="btn-main secondary" id="addItemBtn" style="margin-top:4px;">+ Agregar otra línea</button>
     </div>
 
     <div class="remaining-box total-box">
-      <span>Total del servicio</span>
+      <span>Total de la venta</span>
       <b id="totalPreview">$0</b>
     </div>
     <div class="field">
@@ -495,9 +514,36 @@
     <div class="ledger-stats">
       <div class="ledger-stat"><b id="ledgerToday">$0</b><span>Hoy</span></div>
       <div class="ledger-stat"><b id="ledgerMonth">$0</b><span>Este mes</span></div>
-      <div class="ledger-stat"><b id="ledgerCount">0</b><span>Servicios</span></div>
+      <div class="ledger-stat"><b id="ledgerCount">0</b><span>Movimientos</span></div>
     </div>
+    <button class="btn-main secondary" id="downloadExcelBtn" style="margin-bottom:14px;">Descargar registro en Excel</button>
     <div id="ledgerList"></div>
+  </div>
+
+  <!-- TIENDA: PRODUCTOS E INVENTARIO -->
+  <div class="view" id="view-tienda">
+    <div class="ledger-stats">
+      <div class="ledger-stat"><b id="storeProductCount">0</b><span>Productos</span></div>
+      <div class="ledger-stat"><b id="storeStockValue">$0</b><span>Valor en stock</span></div>
+      <div class="ledger-stat"><b id="storeLowStock">0</b><span>Con poco stock</span></div>
+    </div>
+    <div class="settings-block">
+      <h3>Inventario de productos</h3>
+      <p>Agrega los productos que vendes en tienda, con su precio y cuántas unidades tienes. Al vender uno en "Pago", el inventario baja solo.</p>
+      <div id="productList"></div>
+      <div class="row2" style="margin-top:10px;">
+        <div class="field" style="margin-bottom:0;">
+          <input id="newProductName" placeholder="Nombre del producto">
+        </div>
+        <div class="field" style="margin-bottom:0; max-width:90px;">
+          <input id="newProductPrice" type="number" inputmode="decimal" placeholder="Precio">
+        </div>
+        <div class="field" style="margin-bottom:0; max-width:80px;">
+          <input id="newProductStock" type="number" inputmode="numeric" placeholder="Stock">
+        </div>
+      </div>
+      <button class="btn-main secondary" id="addProductBtn" style="margin-top:10px;">+ Agregar producto</button>
+    </div>
   </div>
 
   <!-- AJUSTES: SERVICIOS + RESPALDO -->
@@ -519,7 +565,7 @@
 
     <div class="settings-block">
       <h3>Copia de seguridad</h3>
-      <p>Descarga un archivo con todas tus clientas, servicios y pagos. Guárdalo en un lugar seguro (Drive, correo) por si cambias de celular.</p>
+      <p>Descarga un archivo con todas tus clientas, servicios, productos y pagos. Guárdalo en un lugar seguro (Drive, correo) por si cambias de celular.</p>
       <button class="btn-main" id="downloadBackupBtn">Descargar copia de seguridad</button>
       <label class="file-btn" for="restoreFileInput">Restaurar desde un archivo de respaldo</label>
       <input type="file" id="restoreFileInput" accept="application/json" style="display:none;">
@@ -560,15 +606,51 @@
     <div style="text-align:center;">
       <canvas id="invoiceCanvas" width="720" height="1040" style="width:100%; max-width:320px; border-radius:14px; box-shadow:0 4px 18px rgba(90,22,56,.18);"></canvas>
     </div>
-    <button class="btn-main" id="invoiceDownloadBtn" style="margin-top:16px;">Descargar factura</button>
-    <a class="btn-main secondary" id="invoiceWaLink" style="display:block; text-align:center; text-decoration:none;" target="_blank" rel="noopener">Enviar por WhatsApp</a>
-    <p class="helper" style="text-align:center; margin-top:10px;">WhatsApp no permite adjuntar la imagen automáticamente: se abrirá el chat con el texto de la factura listo, y puedes adjuntar la imagen descargada si quieres.</p>
+    <button class="btn-main" id="invoiceShareBtn" style="margin-top:16px;">📤 Enviar imagen por WhatsApp</button>
+    <button class="btn-main secondary" id="invoiceDownloadBtn">Descargar factura</button>
+    <a class="btn-main secondary" id="invoiceWaLink" style="display:block; text-align:center; text-decoration:none;" target="_blank" rel="noopener">Abrir chat con el texto de la factura</a>
+    <p class="helper" style="text-align:center; margin-top:10px;">"Enviar imagen" abre el menú para compartir de tu celular con la factura ya adjunta — solo elige WhatsApp y el contacto. Si tu navegador no lo permite, descárgala y adjúntala manualmente.</p>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import {
+  getFirestore, doc, setDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import {
+  getAuth, signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+// ============================================================
+// SINCRONIZACIÓN EN TIEMPO REAL (Firebase) — CONFIGURA AQUÍ
+// ------------------------------------------------------------
+// 1. Crea un proyecto gratis en https://console.firebase.google.com
+// 2. Activa "Firestore Database" (modo producción) y "Authentication"
+//    → método "Anónimo".
+// 3. En Configuración del proyecto → tus apps → app web, copia el
+//    objeto de configuración y pégalo reemplazando el de abajo.
+// Si dejas los valores de ejemplo tal cual, la app funciona normal
+// pero SOLO en este celular, sin sincronizar con otros.
+// ============================================================
+const FIREBASE_CONFIG = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
+const SYNC_ENABLED = FIREBASE_CONFIG.apiKey !== "TU_API_KEY";
+const SALON_DOC = ['salones', 'rosel']; // colección/documento compartido
+
+let cloudDb = null;
+let cloudReady = false;
+let applyingRemoteUpdate = false;
+let pendingLocalPush = false;
+
 (function(){
   // Si la app se abre fuera del entorno de Claude (por ejemplo, publicada en
   // GitHub Pages), window.storage no existe. Usamos localStorage del navegador
@@ -604,10 +686,85 @@
   let clients = [];
   let payments = [];
   let services = [];
+  let products = [];
   let editingClientId = null;
   let quickAddFromPay = false;
 
   const $ = (id) => document.getElementById(id);
+
+  function updateSyncBadge(state){
+    // state: 'off' | 'connecting' | 'on' | 'error'
+    const el = $('syncBadge');
+    if (!el) return;
+    if (state === 'on'){
+      el.textContent = '☁ Sincronizado';
+      el.style.display = 'inline-block';
+      el.style.background = 'rgba(62,143,92,.25)';
+    } else if (state === 'connecting'){
+      el.textContent = '☁ Conectando...';
+      el.style.display = 'inline-block';
+      el.style.background = 'rgba(255,255,255,.18)';
+    } else if (state === 'error'){
+      el.textContent = '⚠ Sin conexión a la nube';
+      el.style.display = 'inline-block';
+      el.style.background = 'rgba(198,66,94,.35)';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
+  async function pushToCloud(){
+    if (!SYNC_ENABLED || !cloudReady || applyingRemoteUpdate){
+      pendingLocalPush = !cloudReady && SYNC_ENABLED;
+      return;
+    }
+    try{
+      const ref = doc(cloudDb, ...SALON_DOC);
+      await setDoc(ref, {
+        clients, payments, services, products,
+        updatedAt: new Date().toISOString()
+      });
+    }catch(e){
+      console.error('No se pudo sincronizar con la nube', e);
+      updateSyncBadge('error');
+    }
+  }
+
+  async function initCloudSync(){
+    if (!SYNC_ENABLED) { updateSyncBadge('off'); return; }
+    updateSyncBadge('connecting');
+    try{
+      const app = initializeApp(FIREBASE_CONFIG);
+      const auth = getAuth(app);
+      await signInAnonymously(auth);
+      cloudDb = getFirestore(app);
+      const ref = doc(cloudDb, ...SALON_DOC);
+      onSnapshot(ref, (snap) => {
+        cloudReady = true;
+        updateSyncBadge('on');
+        if (!snap.exists()){
+          // Primera vez: sube lo que ya haya en este celular.
+          pushToCloud();
+          return;
+        }
+        const data = snap.data();
+        applyingRemoteUpdate = true;
+        clients = data.clients || [];
+        payments = data.payments || [];
+        services = data.services || [];
+        products = data.products || [];
+        render();
+        applyingRemoteUpdate = false;
+        if (pendingLocalPush){ pendingLocalPush = false; pushToCloud(); }
+      }, (err) => {
+        console.error('Error de sincronización', err);
+        updateSyncBadge('error');
+      });
+    }catch(e){
+      console.error('No se pudo iniciar la sincronización', e);
+      updateSyncBadge('error');
+    }
+  }
 
   function showToast(msg){
     const t = $('toast');
@@ -621,31 +778,52 @@
     return '$' + n.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   }
 
-  function serviceOptionsHTML(selectedId){
-    return '<option value="">Selecciona un servicio...</option>' +
-      services.slice().sort((a,b)=>a.name.localeCompare(b.name))
-        .map(s => `<option value="${s.id}" data-price="${s.price}" ${s.id===selectedId?'selected':''}>${s.name} — ${fmtMoney(s.price)}</option>`).join('') +
-      `<option value="__custom__" ${selectedId==='__custom__'?'selected':''}>Otro (escribir servicio)</option>`;
+  function catalogOptionsHTML(selectedValue){
+    let html = '<option value="">Selecciona...</option>';
+    if (services.length){
+      html += '<optgroup label="Servicios">' +
+        services.slice().sort((a,b)=>a.name.localeCompare(b.name))
+          .map(s => `<option value="s:${s.id}" data-price="${s.price}" ${('s:'+s.id)===selectedValue?'selected':''}>${s.name} — ${fmtMoney(s.price)}</option>`).join('') +
+        '</optgroup>';
+    }
+    if (products.length){
+      html += '<optgroup label="Productos (tienda)">' +
+        products.slice().sort((a,b)=>a.name.localeCompare(b.name))
+          .map(p => `<option value="p:${p.id}" data-price="${p.price}" ${('p:'+p.id)===selectedValue?'selected':''}>${p.name} — ${fmtMoney(p.price)} (${p.stock} en stock)</option>`).join('') +
+        '</optgroup>';
+    }
+    html += `<option value="__custom__" ${selectedValue==='__custom__'?'selected':''}>Otro (escribir)</option>`;
+    return html;
   }
 
   function addItemRow(prefill){
     const container = $('itemsContainer');
     const div = document.createElement('div');
     div.className = 'item-row';
-    const selId = prefill ? prefill.serviceId : undefined;
+    const selVal = prefill ? prefill.value : undefined;
     div.innerHTML = `
       <div class="item-row-main">
-        <select class="item-service">${serviceOptionsHTML(selId)}</select>
-        <input class="item-price" type="number" inputmode="decimal" placeholder="Precio" value="${prefill && prefill.price != null ? prefill.price : ''}">
+        <select class="item-catalog">${catalogOptionsHTML(selVal)}</select>
+        <input class="item-qty" type="number" inputmode="numeric" min="1" value="${prefill && prefill.qty ? prefill.qty : 1}" title="Cantidad">
+        <input class="item-price" type="number" inputmode="decimal" placeholder="Precio unit." value="${prefill && prefill.price != null ? prefill.price : ''}">
         <button type="button" class="item-remove" title="Quitar">✕</button>
       </div>
-      <input class="item-service-custom" placeholder="Nombre del servicio" style="display:${selId==='__custom__' ? 'block':'none'};" value="${prefill && prefill.customName ? prefill.customName : ''}">
+      <input class="item-service-custom" placeholder="Nombre del servicio o producto" style="display:${selVal==='__custom__' ? 'block':'none'};" value="${prefill && prefill.customName ? prefill.customName : ''}">
+      <div class="item-row-sub"><span class="item-subtotal">Subtotal: $0</span></div>
     `;
     container.appendChild(div);
 
-    const sel = div.querySelector('.item-service');
+    const sel = div.querySelector('.item-catalog');
     const customInput = div.querySelector('.item-service-custom');
     const priceInput = div.querySelector('.item-price');
+    const qtyInput = div.querySelector('.item-qty');
+    const subtotalEl = div.querySelector('.item-subtotal');
+
+    function refreshSubtotal(){
+      const price = parseFloat(priceInput.value) || 0;
+      const qty = parseFloat(qtyInput.value) || 0;
+      subtotalEl.textContent = 'Subtotal: ' + fmtMoney(price * qty);
+    }
 
     sel.addEventListener('change', () => {
       if (sel.value === '__custom__'){
@@ -657,14 +835,17 @@
         const price = opt ? opt.dataset.price : null;
         if (price){ priceInput.value = price; }
       }
+      refreshSubtotal();
       updateItemsTotal();
     });
-    priceInput.addEventListener('input', updateItemsTotal);
+    priceInput.addEventListener('input', () => { refreshSubtotal(); updateItemsTotal(); });
+    qtyInput.addEventListener('input', () => { refreshSubtotal(); updateItemsTotal(); });
     div.querySelector('.item-remove').addEventListener('click', () => {
       div.remove();
       updateItemsTotal();
     });
 
+    refreshSubtotal();
     return div;
   }
 
@@ -678,26 +859,40 @@
     const rows = document.querySelectorAll('#itemsContainer .item-row');
     const items = [];
     rows.forEach(row => {
-      const sel = row.querySelector('.item-service');
+      const sel = row.querySelector('.item-catalog');
       const customInput = row.querySelector('.item-service-custom');
       const priceInput = row.querySelector('.item-price');
+      const qtyInput = row.querySelector('.item-qty');
       let name = '';
+      let type = 'custom';
+      let refId = null;
       if (sel.value === '__custom__'){
         name = customInput.value.trim();
-      } else if (sel.value){
-        const svc = services.find(s => s.id === sel.value);
+        type = 'custom';
+      } else if (sel.value && sel.value.startsWith('s:')){
+        const id = sel.value.slice(2);
+        const svc = services.find(s => s.id === id);
         name = svc ? svc.name : '';
+        type = 'service';
+        refId = id;
+      } else if (sel.value && sel.value.startsWith('p:')){
+        const id = sel.value.slice(2);
+        const prod = products.find(p => p.id === id);
+        name = prod ? prod.name : '';
+        type = 'product';
+        refId = id;
       }
       const price = parseFloat(priceInput.value) || 0;
+      const qty = Math.max(parseInt(qtyInput.value, 10) || 1, 1);
       if (name && price > 0){
-        items.push({ name, price });
+        items.push({ name, price, qty, type, refId });
       }
     });
     return items;
   }
 
   function computeItemsTotal(){
-    return collectItems().reduce((s,i)=>s+i.price, 0);
+    return collectItems().reduce((s,i)=>s + i.price * i.qty, 0);
   }
 
   function updateItemsTotal(){
@@ -708,11 +903,29 @@
 
   function paymentItems(p){
     if (p.items && p.items.length) return p.items;
-    if (p.service) return [{ name: p.service, price: p.total }];
+    if (p.service) return [{ name: p.service, price: p.total, qty: 1, type: 'custom' }];
     return [];
   }
+  function itemLabel(i){
+    return i.qty && i.qty > 1 ? `${i.name} x${i.qty}` : i.name;
+  }
   function paymentServiceSummary(p){
-    return paymentItems(p).map(i => i.name).join(', ') || 'Servicio';
+    return paymentItems(p).map(itemLabel).join(', ') || 'Servicio';
+  }
+
+  async function applyStockChanges(items, direction){
+    // direction: -1 al vender (resta stock), +1 al eliminar una venta (devuelve stock)
+    let changed = false;
+    items.forEach(i => {
+      if (i.type === 'product' && i.refId){
+        const prod = products.find(p => p.id === i.refId);
+        if (prod){
+          prod.stock = Math.max(prod.stock + direction * i.qty, 0);
+          changed = true;
+        }
+      }
+    });
+    if (changed) await saveProducts();
   }
 
   function waLink(phone, text){
@@ -842,9 +1055,9 @@
       ctx.textAlign = 'left';
       ctx.fillStyle = '#2B0E1C';
       ctx.font = '600 24px Inter, sans-serif';
-      ctx.fillText(item.name, 60, y);
+      ctx.fillText(itemLabel(item), 60, y);
       ctx.textAlign = 'right';
-      ctx.fillText(fmtMoney(item.price), W - 60, y);
+      ctx.fillText(fmtMoney(item.price * (item.qty||1)), W - 60, y);
     });
 
     if (payment.advance > 0){
@@ -899,7 +1112,7 @@
     msg += `Hora: ${new Date().toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}\n`;
     msg += `Cliente: ${client.name}\n\n`;
     items.forEach(item => {
-      msg += `${item.name}: ${fmtMoney(item.price)}\n`;
+      msg += `${itemLabel(item)}: ${fmtMoney(item.price * (item.qty||1))}\n`;
     });
     msg += `\nTotal: ${fmtMoney(payment.total)}\n`;
     if (payment.advance > 0) msg += `Anticipo pagado: ${fmtMoney(payment.advance)}\n`;
@@ -913,16 +1126,40 @@
     if (!p) return;
     const client = clients.find(c => c.id === p.clientId) || {name:'Clienta', phone:''};
     await drawInvoice(p, client);
+    const filename = `factura_${client.name.replace(/\s+/g,'_')}_${p.serviceDate}.png`;
+
     $('invoiceWaLink').href = waLink(client.phone, invoiceWhatsAppText(p, client));
     $('invoiceOverlay').classList.add('show');
+
     $('invoiceDownloadBtn').onclick = () => {
       const canvas = $('invoiceCanvas');
       const a = document.createElement('a');
       a.href = canvas.toDataURL('image/png');
-      a.download = `factura_${client.name.replace(/\s+/g,'_')}_${p.serviceDate}.png`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+    };
+
+    $('invoiceShareBtn').onclick = () => {
+      const canvas = $('invoiceCanvas');
+      canvas.toBlob(async (blob) => {
+        if (!blob) { showToast('No se pudo preparar la imagen'); return; }
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })){
+          try{
+            await navigator.share({
+              files: [file],
+              title: 'Factura Salón Rosel',
+              text: `Factura de ${client.name} — Salón Rosel`,
+            });
+          }catch(err){
+            // El usuario canceló el share, no hacemos nada
+          }
+        } else {
+          showToast('Tu navegador no permite compartir la imagen directo. Descárgala y adjúntala en WhatsApp.');
+        }
+      }, 'image/png');
     };
   }
 
@@ -939,20 +1176,32 @@
       const s = await window.storage.get('services', false);
       services = s ? JSON.parse(s.value) : [];
     }catch(e){ services = []; }
+    try{
+      const pr = await window.storage.get('products', false);
+      products = pr ? JSON.parse(pr.value) : [];
+    }catch(e){ products = []; }
     render();
   }
 
   async function saveClients(){
     try{ await window.storage.set('clients', JSON.stringify(clients), false); }
     catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+    pushToCloud();
   }
   async function savePayments(){
     try{ await window.storage.set('payments', JSON.stringify(payments), false); }
     catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+    pushToCloud();
   }
   async function saveServices(){
     try{ await window.storage.set('services', JSON.stringify(services), false); }
     catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+    pushToCloud();
+  }
+  async function saveProducts(){
+    try{ await window.storage.set('products', JSON.stringify(products), false); }
+    catch(e){ showToast('No se pudo guardar. Intenta de nuevo.'); }
+    pushToCloud();
   }
 
   function clientVisits(clientId){
@@ -1037,6 +1286,37 @@
         </div>
       </div>
     `).join('');
+  }
+
+  function stockBadge(stock){
+    if (stock <= 0) return `<span class="stock-badge out">Agotado</span>`;
+    if (stock <= 3) return `<span class="stock-badge low">Quedan ${stock}</span>`;
+    return `<span class="stock-badge">${stock} en stock</span>`;
+  }
+
+  function renderProducts(){
+    const list = $('productList');
+    if (products.length === 0){
+      list.innerHTML = '<p style="color:var(--muted); font-size:12.5px;">Aún no tienes productos guardados.</p>';
+    } else {
+      list.innerHTML = products.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p => `
+        <div class="service-item">
+          <div>
+            <div class="service-name">${p.name}</div>
+            <div class="service-price">${fmtMoney(p.price)} ${stockBadge(p.stock)}</div>
+          </div>
+          <div class="service-actions">
+            <button onclick="RoselApp.editProduct('${p.id}')">Editar</button>
+            <button onclick="RoselApp.deleteProduct('${p.id}')">Eliminar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    $('storeProductCount').textContent = products.length;
+    const stockValue = products.reduce((s,p)=> s + (p.price * p.stock), 0);
+    $('storeStockValue').textContent = fmtMoney(stockValue).replace('.00','');
+    $('storeLowStock').textContent = products.filter(p => p.stock <= 3).length;
   }
 
   function renderLedger(){
@@ -1133,6 +1413,7 @@
     renderClients();
     renderPaySelect();
     renderServices();
+    renderProducts();
     renderLedger();
     renderReminders();
   }
@@ -1182,13 +1463,13 @@
   async function savePayment(){
     const clientId = $('payClientSelect').value;
     const items = collectItems();
-    const total = items.reduce((s,i)=>s+i.price, 0);
+    const total = items.reduce((s,i)=>s + i.price * i.qty, 0);
     const advance = parseFloat($('payAdvance').value) || 0;
     const serviceDate = $('payServiceDate').value;
     const reminderDate = $('payReminderDate').value;
 
     if (!clientId){ showToast('Selecciona una clienta'); return; }
-    if (items.length === 0){ showToast('Agrega al menos un servicio con su precio'); return; }
+    if (items.length === 0){ showToast('Agrega al menos un servicio o producto con su precio'); return; }
 
     const remaining = Math.max(total - advance, 0);
     payments.push({
@@ -1198,6 +1479,7 @@
       reminderDate: remaining > 0 ? reminderDate : '',
     });
     await savePayments();
+    await applyStockChanges(items, -1);
 
     $('itemsContainer').innerHTML = '';
     addItemRow();
@@ -1206,7 +1488,7 @@
     updateItemsTotal();
 
     render();
-    showToast('Pago registrado');
+    showToast('Venta registrada');
   }
 
   async function markPaid(paymentId){
@@ -1218,7 +1500,9 @@
   }
 
   async function deletePayment(paymentId){
-    if (!confirm('¿Eliminar este registro del libro diario? No se puede deshacer.')) return;
+    if (!confirm('¿Eliminar este registro del libro diario? Si tenía productos, se devolverán al inventario.')) return;
+    const p = payments.find(p => p.id === paymentId);
+    if (p) await applyStockChanges(paymentItems(p), +1);
     payments = payments.filter(p => p.id !== paymentId);
     await savePayments();
     render();
@@ -1259,10 +1543,49 @@
     showToast('Servicio eliminado');
   }
 
+  async function addProduct(){
+    const name = $('newProductName').value.trim();
+    const price = parseFloat($('newProductPrice').value) || 0;
+    const stock = Math.max(parseInt($('newProductStock').value, 10) || 0, 0);
+    if (!name){ showToast('Escribe el nombre del producto'); return; }
+    products.push({ id: 'pr_' + Date.now(), name, price, stock });
+    await saveProducts();
+    $('newProductName').value = '';
+    $('newProductPrice').value = '';
+    $('newProductStock').value = '';
+    render();
+    showToast('Producto agregado');
+  }
+
+  async function editProduct(productId){
+    const p = products.find(p => p.id === productId);
+    if (!p) return;
+    const newName = prompt('Nombre del producto:', p.name);
+    if (newName === null) return;
+    const newPriceStr = prompt('Precio:', p.price);
+    if (newPriceStr === null) return;
+    const newStockStr = prompt('Unidades en stock:', p.stock);
+    if (newStockStr === null) return;
+    p.name = newName.trim() || p.name;
+    p.price = parseFloat(newPriceStr) || p.price;
+    p.stock = Math.max(parseInt(newStockStr, 10) || 0, 0);
+    await saveProducts();
+    render();
+    showToast('Producto actualizado');
+  }
+
+  async function deleteProduct(productId){
+    if (!confirm('¿Eliminar este producto del inventario?')) return;
+    products = products.filter(p => p.id !== productId);
+    await saveProducts();
+    render();
+    showToast('Producto eliminado');
+  }
+
   function downloadBackup(){
     const data = {
       exportedAt: new Date().toISOString(),
-      clients, payments, services
+      clients, payments, services, products
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1291,9 +1614,11 @@
         clients = data.clients || [];
         payments = data.payments || [];
         services = data.services || [];
+        products = data.products || [];
         await saveClients();
         await savePayments();
         await saveServices();
+        await saveProducts();
         render();
         showToast('Copia de seguridad restaurada');
       }catch(err){
@@ -1301,6 +1626,37 @@
       }
     };
     reader.readAsText(file);
+  }
+
+  function downloadExcelLedger(){
+    if (typeof XLSX === 'undefined'){
+      showToast('No se pudo cargar el generador de Excel (revisa tu conexión)');
+      return;
+    }
+    const rows = payments.slice()
+      .sort((a,b) => (a.serviceDate||'').localeCompare(b.serviceDate||''))
+      .map(p => {
+        const client = clients.find(c => c.id === p.clientId) || { name: 'Clienta eliminada' };
+        return {
+          'Fecha': p.serviceDate,
+          'Cliente': client.name,
+          'Servicios / Productos': paymentServiceSummary(p),
+          'Total': p.total,
+          'Anticipo': p.advance,
+          'Restante': p.remaining,
+        };
+      });
+    if (rows.length === 0){
+      showToast('Todavía no hay movimientos que exportar');
+      return;
+    }
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{wch:12},{wch:22},{wch:32},{wch:10},{wch:10},{wch:10}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Registro Diario');
+    const stamp = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `registro_diario_salon_rosel_${stamp}.xlsx`);
+    showToast('Excel descargado');
   }
 
   function editClient(clientId){
@@ -1330,10 +1686,12 @@
   $('payAdvance').addEventListener('input', updateRemainingPreview);
   $('addServiceBtn').addEventListener('click', addService);
   $('addItemBtn').addEventListener('click', () => addItemRow());
+  $('addProductBtn').addEventListener('click', addProduct);
   $('downloadBackupBtn').addEventListener('click', downloadBackup);
+  $('downloadExcelBtn').addEventListener('click', downloadExcelLedger);
   $('restoreFileInput').addEventListener('change', (e) => restoreBackup(e.target.files[0]));
 
-  window.RoselApp = { editClient, markPaid, deletePayment, editService, deleteService, showInvoice };
+  window.RoselApp = { editClient, markPaid, deletePayment, editService, deleteService, editProduct, deleteProduct, showInvoice };
 
   // Instalación como app (PWA)
   let deferredInstallPrompt = null;
@@ -1361,6 +1719,7 @@
 
   ensureAtLeastOneRow();
   loadData();
+  initCloudSync();
 })();
 </script>
 </body>
