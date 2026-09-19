@@ -938,6 +938,69 @@ let pendingLocalPush = false;
   const SALON_NAME = 'SALÓN DE BELLEZA ROSEL';
   const SALON_ADDRESS = 'Urb. Aristides Calvanis, Av. principal casa #23, frente al puente que comunica con Las Eugenias';
 
+  // ------------------------------------------------------------
+  // TASA BCV (Bs. por 1 €) — se consulta al generar cada factura,
+  // con caché para no depender de internet cada vez y dos fuentes
+  // gratuitas por si una falla.
+  // ------------------------------------------------------------
+  let bcvCache = null; // { rate, fetchedAt }
+
+  async function fetchWithTimeout(url, ms){
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), ms);
+    try{
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(t);
+      if (!res.ok) throw new Error('bad status');
+      return await res.json();
+    }catch(e){
+      clearTimeout(t);
+      throw e;
+    }
+  }
+
+  async function fetchBCVRate(){
+    // Fuente 1
+    try{
+      const data = await fetchWithTimeout('https://bcv-api-ashy.vercel.app/api/tasa', 4000);
+      const rate = parseFloat(data?.bcv?.eur);
+      if (rate > 0) return rate;
+    }catch(e){ /* seguimos con la siguiente fuente */ }
+    // Fuente 2
+    try{
+      const data = await fetchWithTimeout('https://thehermit007.github.io/Quadra_API/data.json', 4000);
+      const rate = parseFloat(data?.rates?.EUR);
+      if (rate > 0) return rate;
+    }catch(e){ /* sin suerte tampoco */ }
+    return null;
+  }
+
+  async function getBCVRate(){
+    const now = Date.now();
+    if (bcvCache && (now - bcvCache.fetchedAt) < 6 * 60 * 60 * 1000){
+      return bcvCache; // reutiliza si se pidió hace menos de 6 horas
+    }
+    const rate = await fetchBCVRate();
+    if (rate){
+      bcvCache = { rate, fetchedAt: now };
+      try{ await window.storage.set('bcvRateCache', JSON.stringify(bcvCache), false); }catch(e){}
+      return bcvCache;
+    }
+    // Sin internet o las dos fuentes fallaron: usa el último valor guardado.
+    if (!bcvCache){
+      try{
+        const stored = await window.storage.get('bcvRateCache', false);
+        if (stored) bcvCache = JSON.parse(stored.value);
+      }catch(e){}
+    }
+    return bcvCache;
+  }
+
+  function fmtBs(n){
+    n = Number(n) || 0;
+    return 'Bs. ' + n.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
   function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, align){
     const words = text.split(' ');
     let line = '';
@@ -962,7 +1025,8 @@ let pendingLocalPush = false;
   async function drawInvoice(payment, client){
     const canvas = $('invoiceCanvas');
     const items = paymentItems(payment);
-    canvas.height = 900 + Math.max(items.length - 1, 0) * 40;
+    const bcv = await getBCVRate();
+    canvas.height = 900 + Math.max(items.length - 1, 0) * 40 + (bcv ? 55 : 0);
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
 
@@ -1095,6 +1159,18 @@ let pendingLocalPush = false;
     ctx.font = '800 44px Sora, sans-serif';
     ctx.fillText(fmtMoney(payment.total), W - 60, y);
 
+    if (bcv){
+      y += 42;
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#8B6E77';
+      ctx.font = '600 22px Inter, sans-serif';
+      ctx.fillText('≈ ' + fmtBs(payment.total * bcv.rate), W - 60, y);
+      ctx.textAlign = 'left';
+      ctx.font = '400 14px Inter, sans-serif';
+      const fecha = new Date(bcv.fetchedAt).toLocaleDateString('es-VE');
+      ctx.fillText(`Tasa BCV: ${bcv.rate.toLocaleString('es-VE',{minimumFractionDigits:2})} Bs/€ (${fecha})`, 60, y);
+    }
+
     // Footer
     ctx.textAlign = 'center';
     ctx.fillStyle = '#8B6E77';
@@ -1115,6 +1191,9 @@ let pendingLocalPush = false;
       msg += `${itemLabel(item)}: ${fmtMoney(item.price * (item.qty||1))}\n`;
     });
     msg += `\nTotal: ${fmtMoney(payment.total)}\n`;
+    if (bcvCache) {
+      msg += `≈ ${fmtBs(payment.total * bcvCache.rate)} (tasa BCV ${bcvCache.rate.toLocaleString('es-VE',{minimumFractionDigits:2})} Bs/€)\n`;
+    }
     if (payment.advance > 0) msg += `Anticipo pagado: ${fmtMoney(payment.advance)}\n`;
     if (payment.remaining > 0) msg += `Saldo restante: ${fmtMoney(payment.remaining)}\n`;
     msg += `\n¡Gracias por tu preferencia! 💕`;
