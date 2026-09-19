@@ -493,8 +493,8 @@
       <b id="remainingPreview">€0</b>
     </div>
     <div class="field">
-      <label>Fecha del servicio</label>
-      <input id="payServiceDate" type="date">
+      <label>Fecha y hora del servicio o cita</label>
+      <input id="payServiceDate" type="datetime-local">
     </div>
     <div class="field">
       <label>Recordarme cobrar el ______</label>
@@ -1079,26 +1079,16 @@ let pendingLocalPush = false;
     ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(60, y+14); ctx.lineTo(150, y+14); ctx.stroke();
 
-    // Fecha / hora / cliente
+    // Fecha/hora de la cita o servicio, cliente, emisión
     y += 60;
+    const isAppointment = payment.remaining > 0;
     ctx.fillStyle = '#8B6E77';
     ctx.font = '600 20px Inter, sans-serif';
-    ctx.fillText('Fecha del servicio', 60, y);
-    ctx.fillStyle = '#2B0E1C';
-    ctx.font = '600 24px Inter, sans-serif';
+    ctx.fillText(isAppointment ? '📅 Cita agendada' : 'Fecha y hora del servicio', 60, y);
+    ctx.fillStyle = isAppointment ? '#D9A441' : '#2B0E1C';
+    ctx.font = isAppointment ? '700 26px Sora, sans-serif' : '600 24px Inter, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(formatDate(payment.serviceDate), W - 60, y);
-
-    y += 42;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#8B6E77';
-    ctx.font = '600 20px Inter, sans-serif';
-    ctx.fillText('Hora de emisión', 60, y);
-    ctx.fillStyle = '#2B0E1C';
-    ctx.font = '600 24px Inter, sans-serif';
-    ctx.textAlign = 'right';
-    const now = new Date();
-    ctx.fillText(now.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'}), W - 60, y);
+    ctx.fillText(formatDateTime(payment.serviceDate), W - 60, y);
 
     y += 42;
     ctx.textAlign = 'left';
@@ -1109,6 +1099,17 @@ let pendingLocalPush = false;
     ctx.font = '700 24px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(client.name, W - 60, y);
+
+    y += 42;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8B6E77';
+    ctx.font = '600 20px Inter, sans-serif';
+    ctx.fillText('Factura emitida el', 60, y);
+    ctx.fillStyle = '#2B0E1C';
+    ctx.font = '600 20px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    const now = new Date();
+    ctx.fillText(formatDateTime(now.toISOString()), W - 60, y);
 
     // Dashed divider
     y += 34;
@@ -1218,11 +1219,14 @@ let pendingLocalPush = false;
 
   function invoiceWhatsAppText(payment, client){
     const items = paymentItems(payment);
+    const isAppointment = payment.remaining > 0;
     let msg = `*${SALON_NAME}*\n_${SALON_ADDRESS}_\n\n`;
     msg += `🧾 *Factura*\n`;
-    msg += `Fecha: ${formatDate(payment.serviceDate)}\n`;
-    msg += `Hora: ${new Date().toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}\n`;
-    msg += `Cliente: ${client.name}\n\n`;
+    msg += isAppointment
+      ? `📅 *Cita agendada:* ${formatDateTime(payment.serviceDate)}\n`
+      : `Fecha y hora del servicio: ${formatDateTime(payment.serviceDate)}\n`;
+    msg += `Cliente: ${client.name}\n`;
+    msg += `Factura emitida el: ${formatDateTime(new Date().toISOString())}\n\n`;
     items.forEach(item => {
       msg += `${itemLabel(item)}: ${fmtMoney(item.price * (item.qty||1))}\n`;
     });
@@ -1464,7 +1468,7 @@ let pendingLocalPush = false;
         return `
           <div class="ledger-item">
             <div class="ledger-left">
-              <div class="ledger-date">${formatDate(p.serviceDate)}</div>
+              <div class="ledger-date">${formatDateTime(p.serviceDate)}</div>
               <div class="ledger-name">${client.name}</div>
               <div class="ledger-service">${paymentServiceSummary(p)}</div>
             </div>
@@ -1486,7 +1490,7 @@ let pendingLocalPush = false;
 
     const todayStr = new Date().toISOString().slice(0,10);
     const monthStr = todayStr.slice(0,7);
-    const todayTotal = payments.filter(p => p.serviceDate === todayStr).reduce((s,p)=>s+p.total,0);
+    const todayTotal = payments.filter(p => (p.serviceDate||'').startsWith(todayStr)).reduce((s,p)=>s+p.total,0);
     const monthTotal = payments.filter(p => (p.serviceDate||'').startsWith(monthStr)).reduce((s,p)=>s+p.total,0);
     $('ledgerToday').textContent = fmtMoney(todayTotal).replace('.00','');
     $('ledgerMonth').textContent = fmtMoney(monthTotal).replace('.00','');
@@ -1516,6 +1520,7 @@ let pendingLocalPush = false;
             <div>
               <div class="rem-name">${client.name}</div>
               <div class="rem-service">${paymentServiceSummary(p)}</div>
+              <div class="rem-service">📅 ${formatDateTime(p.serviceDate)}</div>
             </div>
             <div class="rem-amount">${fmtMoney(p.remaining)}</div>
           </div>
@@ -1537,8 +1542,18 @@ let pendingLocalPush = false;
     return d.toISOString().slice(0,10);
   }
   function formatDate(dateStr){
-    const d = new Date(dateStr + 'T00:00:00');
+    const datePart = (dateStr || '').split('T')[0];
+    const d = new Date(datePart + 'T00:00:00');
     return d.toLocaleDateString('es-VE', {day:'numeric', month:'short'});
+  }
+  function formatDateTime(dateStr){
+    if (!dateStr) return '';
+    const hasTime = dateStr.includes('T');
+    const d = hasTime ? new Date(dateStr) : new Date(dateStr + 'T00:00:00');
+    const datePart = d.toLocaleDateString('es-VE', {day:'numeric', month:'short'});
+    if (!hasTime) return datePart;
+    const timePart = d.toLocaleTimeString('es-VE', {hour:'numeric', minute:'2-digit'});
+    return `${datePart}, ${timePart}`;
   }
 
   function render(){
@@ -1608,7 +1623,7 @@ let pendingLocalPush = false;
     payments.push({
       id: 'p_' + Date.now(),
       clientId, items, total, advance, remaining,
-      serviceDate: serviceDate || new Date().toISOString().slice(0,10),
+      serviceDate: serviceDate || new Date().toISOString().slice(0,16),
       reminderDate: remaining > 0 ? reminderDate : '',
     });
     await savePayments();
@@ -1771,7 +1786,8 @@ let pendingLocalPush = false;
       .map(p => {
         const client = clients.find(c => c.id === p.clientId) || { name: 'Clienta eliminada' };
         return {
-          'Fecha': p.serviceDate,
+          'Fecha': (p.serviceDate||'').split('T')[0],
+          'Hora': (p.serviceDate||'').includes('T') ? p.serviceDate.split('T')[1] : '',
           'Cliente': client.name,
           'Servicios / Productos': paymentServiceSummary(p),
           'Total': p.total,
@@ -1784,7 +1800,7 @@ let pendingLocalPush = false;
       return;
     }
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [{wch:12},{wch:22},{wch:32},{wch:10},{wch:10},{wch:10}];
+    ws['!cols'] = [{wch:12},{wch:8},{wch:22},{wch:32},{wch:10},{wch:10},{wch:10}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Registro Diario');
     const stamp = new Date().toISOString().slice(0,10);
