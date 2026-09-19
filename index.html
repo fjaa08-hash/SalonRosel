@@ -609,6 +609,7 @@
     <button class="btn-main" id="invoiceShareBtn" style="margin-top:16px;">📤 Enviar imagen por WhatsApp</button>
     <button class="btn-main secondary" id="invoiceDownloadBtn">Descargar factura</button>
     <a class="btn-main secondary" id="invoiceWaLink" style="display:block; text-align:center; text-decoration:none;" target="_blank" rel="noopener">Abrir chat con el texto de la factura</a>
+    <button class="btn-main secondary" id="invoiceCopyPayBtn">📋 Copiar datos de Pago Móvil</button>
     <p class="helper" style="text-align:center; margin-top:10px;">"Enviar imagen" abre el menú para compartir de tu celular con la factura ya adjunta — solo elige WhatsApp y el contacto. Si tu navegador no lo permite, descárgala y adjúntala manualmente.</p>
   </div>
 </div>
@@ -937,6 +938,11 @@ let pendingLocalPush = false;
 
   const SALON_NAME = 'SALÓN DE BELLEZA ROSEL';
   const SALON_ADDRESS = 'Urb. Aristides Calvanis, Av. principal casa #23, frente al puente que comunica con Las Eugenias';
+  const PAGO_MOVIL = {
+    banco: 'Banco de Venezuela',
+    ci: '19928066',
+    telefono: '04120748066',
+  };
 
   // ------------------------------------------------------------
   // TASA BCV (Bs. por 1 €) — se consulta al generar cada factura,
@@ -1026,7 +1032,7 @@ let pendingLocalPush = false;
     const canvas = $('invoiceCanvas');
     const items = paymentItems(payment);
     const bcv = await getBCVRate();
-    canvas.height = 900 + Math.max(items.length - 1, 0) * 40 + (bcv ? 55 : 0);
+    canvas.height = 900 + Math.max(items.length - 1, 0) * 40 + (bcv ? 55 : 0) + 190;
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
 
@@ -1171,6 +1177,36 @@ let pendingLocalPush = false;
       ctx.fillText(`Tasa BCV: ${bcv.rate.toLocaleString('es-VE',{minimumFractionDigits:2})} Bs/€ (${fecha})`, 60, y);
     }
 
+    // Caja de Pago Móvil
+    y += 55;
+    const boxH = 175;
+    ctx.fillStyle = '#F4E2EA';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(60, y, W - 120, boxH, 16) : ctx.rect(60, y, W - 120, boxH);
+    ctx.fill();
+
+    let py = y + 34;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#5A1638';
+    ctx.font = '700 20px Sora, sans-serif';
+    ctx.fillText('📱 Pago Móvil', 84, py);
+
+    py += 34;
+    ctx.font = '600 18px Inter, sans-serif';
+    ctx.fillStyle = '#2B0E1C';
+    ctx.fillText(`Banco: ${PAGO_MOVIL.banco}`, 84, py);
+    py += 28;
+    ctx.fillText(`C.I.: ${PAGO_MOVIL.ci}`, 84, py);
+    py += 28;
+    ctx.fillText(`Teléfono: ${PAGO_MOVIL.telefono}`, 84, py);
+    if (bcv){
+      py += 32;
+      ctx.font = '700 20px Inter, sans-serif';
+      ctx.fillStyle = '#5A1638';
+      ctx.fillText(`Monto a pagar: ${fmtBs(payment.total * bcv.rate)}`, 84, py);
+    }
+    y += boxH;
+
     // Footer
     ctx.textAlign = 'center';
     ctx.fillStyle = '#8B6E77';
@@ -1196,6 +1232,13 @@ let pendingLocalPush = false;
     }
     if (payment.advance > 0) msg += `Anticipo pagado: ${fmtMoney(payment.advance)}\n`;
     if (payment.remaining > 0) msg += `Saldo restante: ${fmtMoney(payment.remaining)}\n`;
+    msg += `\n📱 *Pago Móvil*\n`;
+    msg += `Banco: ${PAGO_MOVIL.banco}\n`;
+    msg += `C.I.: ${PAGO_MOVIL.ci}\n`;
+    msg += `Teléfono: ${PAGO_MOVIL.telefono}\n`;
+    if (bcvCache){
+      msg += `Monto a pagar: ${fmtBs(payment.total * bcvCache.rate)}\n`;
+    }
     msg += `\n¡Gracias por tu preferencia! 💕`;
     return msg;
   }
@@ -1239,6 +1282,17 @@ let pendingLocalPush = false;
           showToast('Tu navegador no permite compartir la imagen directo. Descárgala y adjúntala en WhatsApp.');
         }
       }, 'image/png');
+    };
+
+    $('invoiceCopyPayBtn').onclick = async () => {
+      let text = `Banco: ${PAGO_MOVIL.banco}\nC.I.: ${PAGO_MOVIL.ci}\nTeléfono: ${PAGO_MOVIL.telefono}`;
+      if (bcvCache) text += `\nMonto: ${fmtBs(p.total * bcvCache.rate)}`;
+      try{
+        await navigator.clipboard.writeText(text);
+        showToast('Datos de Pago Móvil copiados');
+      }catch(e){
+        showToast('No se pudo copiar. Mantén presionado el botón para copiar manualmente.');
+      }
     };
   }
 
