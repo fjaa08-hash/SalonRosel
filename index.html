@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Salón Rosel</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#5A1638">
+<meta name="theme-color" content="#5C2A4C">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,17 +18,17 @@
 
 <style>
   :root{
-    --plum:#5A1638;
-    --plum-ink:#2B0E1C;
-    --rose:#C93B6B;
-    --gold:#D9A441;
-    --blush:#FCEFEA;
+    --plum:#5C2A4C;
+    --plum-ink:#2A1220;
+    --rose:#CE639D;
+    --gold:#E1AE7A;
+    --blush:#F7EAE8;
     --card:#FFFFFF;
-    --line:#F0DCD8;
+    --line:#EBD3CF;
     --ok:#3E8F5C;
     --warn:#D98B2B;
     --danger:#C6425E;
-    --muted:#8B6E77;
+    --muted:#8C6E7E;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -52,7 +52,7 @@
   /* Header */
   .hdr{
     padding:26px 20px 18px;
-    background:linear-gradient(135deg, #6A1B45 0%, var(--plum) 45%, #8A2555 100%);
+    background:linear-gradient(135deg, #7350A0 0%, var(--plum) 45%, #CE639D 100%);
     color:#fff;
     border-radius:0 0 28px 28px;
     position:relative;
@@ -73,7 +73,7 @@
     right:30px; bottom:-60px;
     width:90px; height:90px;
     border-radius:50%;
-    background:var(--gold);
+    background:#689EC6;
     opacity:.3;
   }
   .hdr-top{display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;}
@@ -113,7 +113,7 @@
     background:#fff;
     border-radius:14px;
     padding:4px;
-    box-shadow:0 2px 10px rgba(90,22,56,.06);
+    box-shadow:0 2px 10px rgba(92,42,76,.06);
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
@@ -219,7 +219,7 @@
     background:linear-gradient(135deg, var(--rose), var(--gold));
     color:#fff;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 8px 20px rgba(201,59,107,.45);
+    box-shadow:0 8px 20px rgba(206,99,157,.45);
     cursor:pointer;
     border:none;
     z-index:20;
@@ -295,7 +295,7 @@
     padding:14px;
     border-radius:12px;
     border:none;
-    background:linear-gradient(120deg, var(--plum), #8A2555);
+    background:linear-gradient(120deg, var(--plum), #CE639D);
     color:#fff;
     font-family:'Sora',sans-serif;
     font-weight:700;
@@ -306,7 +306,7 @@
 
   /* Modal */
   .overlay{
-    position:fixed; inset:0; background:rgba(43,14,28,.45);
+    position:fixed; inset:0; background:rgba(42,18,32,.45);
     display:none; align-items:flex-end; justify-content:center; z-index:30;
   }
   .overlay.show{display:flex;}
@@ -458,7 +458,7 @@
   <!-- CLIENTES -->
   <div class="view active" id="view-clientes">
     <div class="search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B6E77" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C6E7E" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="searchClients" placeholder="Buscar por nombre o teléfono">
     </div>
     <div id="clientList"></div>
@@ -587,6 +587,8 @@
       <button class="close-x" id="sheetClose">✕</button>
     </div>
     <div id="sheetBody">
+      <button type="button" class="btn-main secondary" id="pickContactBtn" style="display:none; margin-bottom:4px;">📇 Elegir de mis contactos</button>
+      <div class="helper" id="pickContactHelper" style="display:none; margin-bottom:14px;">Se abrirá la lista de contactos de tu celular; el nombre y teléfono se llenan solos.</div>
       <div class="field">
         <label>Nombre</label>
         <input id="newName" placeholder="Nombre de la clienta">
@@ -607,7 +609,7 @@
       <button class="close-x" id="invoiceClose">✕</button>
     </div>
     <div style="text-align:center;">
-      <canvas id="invoiceCanvas" width="720" height="1040" style="width:100%; max-width:320px; border-radius:14px; box-shadow:0 4px 18px rgba(90,22,56,.18);"></canvas>
+      <canvas id="invoiceCanvas" width="720" height="1040" style="width:100%; max-width:320px; border-radius:14px; box-shadow:0 4px 18px rgba(92,42,76,.18);"></canvas>
     </div>
     <button class="btn-main" id="invoiceShareBtn" style="margin-top:16px;">📤 Enviar imagen por WhatsApp</button>
     <button class="btn-main secondary" id="invoiceDownloadBtn">Descargar factura</button>
@@ -1054,18 +1056,18 @@ let pendingLocalPush = false;
     ctx.fillRect(0, 0, W, H);
 
     // Header band
-    ctx.fillStyle = '#5A1638';
+    ctx.fillStyle = '#5C2A4C';
     ctx.fillRect(0, 0, W, 240);
     ctx.beginPath(); ctx.arc(W - 60, 10, 110, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(201,59,107,.35)'; ctx.fill();
+    ctx.fillStyle = 'rgba(206,99,157,.35)'; ctx.fill();
     ctx.beginPath(); ctx.arc(60, 230, 70, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(217,164,65,.3)'; ctx.fill();
+    ctx.fillStyle = 'rgba(225,174,122,.3)'; ctx.fill();
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '800 40px Sora, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('SALÓN', W/2, 92);
-    ctx.fillStyle = '#D9A441';
+    ctx.fillStyle = '#E1AE7A';
     ctx.fillText('ROSEL', W/2, 138);
 
     ctx.fillStyle = '#EBC9D3';
@@ -1074,41 +1076,41 @@ let pendingLocalPush = false;
 
     // "FACTURA" label
     let y = 300;
-    ctx.fillStyle = '#5A1638';
+    ctx.fillStyle = '#5C2A4C';
     ctx.font = '700 30px Sora, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('Factura', 60, y);
-    ctx.strokeStyle = '#D9A441';
+    ctx.strokeStyle = '#E1AE7A';
     ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(60, y+14); ctx.lineTo(150, y+14); ctx.stroke();
 
     // Fecha/hora de la cita o servicio, cliente, emisión
     y += 60;
     const isAppointment = payment.remaining > 0;
-    ctx.fillStyle = '#8B6E77';
+    ctx.fillStyle = '#8C6E7E';
     ctx.font = '600 20px Inter, sans-serif';
     ctx.fillText(isAppointment ? '📅 Cita agendada' : 'Fecha y hora del servicio', 60, y);
-    ctx.fillStyle = isAppointment ? '#D9A441' : '#2B0E1C';
+    ctx.fillStyle = isAppointment ? '#E1AE7A' : '#2A1220';
     ctx.font = isAppointment ? '700 26px Sora, sans-serif' : '600 24px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(formatDateTime(payment.serviceDate), W - 60, y);
 
     y += 42;
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#8B6E77';
+    ctx.fillStyle = '#8C6E7E';
     ctx.font = '600 20px Inter, sans-serif';
     ctx.fillText('Cliente', 60, y);
-    ctx.fillStyle = '#2B0E1C';
+    ctx.fillStyle = '#2A1220';
     ctx.font = '700 24px Inter, sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(client.name, W - 60, y);
 
     y += 42;
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#8B6E77';
+    ctx.fillStyle = '#8C6E7E';
     ctx.font = '600 20px Inter, sans-serif';
     ctx.fillText('Factura emitida el', 60, y);
-    ctx.fillStyle = '#2B0E1C';
+    ctx.fillStyle = '#2A1220';
     ctx.font = '600 20px Inter, sans-serif';
     ctx.textAlign = 'right';
     const now = new Date();
@@ -1116,7 +1118,7 @@ let pendingLocalPush = false;
 
     // Dashed divider
     y += 34;
-    ctx.strokeStyle = '#F0DCD8';
+    ctx.strokeStyle = '#EBD3CF';
     ctx.setLineDash([8, 8]);
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-60, y); ctx.stroke();
@@ -1127,7 +1129,7 @@ let pendingLocalPush = false;
     items.forEach((item, idx) => {
       if (idx > 0) y += 40;
       ctx.textAlign = 'left';
-      ctx.fillStyle = '#2B0E1C';
+      ctx.fillStyle = '#2A1220';
       ctx.font = '600 24px Inter, sans-serif';
       ctx.fillText(itemLabel(item), 60, y);
       ctx.textAlign = 'right';
@@ -1137,7 +1139,7 @@ let pendingLocalPush = false;
     if (payment.advance > 0){
       y += 40;
       ctx.textAlign = 'left';
-      ctx.fillStyle = '#8B6E77';
+      ctx.fillStyle = '#8C6E7E';
       ctx.font = '500 20px Inter, sans-serif';
       ctx.fillText('Anticipo pagado', 60, y);
       ctx.textAlign = 'right';
@@ -1155,14 +1157,14 @@ let pendingLocalPush = false;
 
     // Solid divider
     y += 34;
-    ctx.strokeStyle = '#5A1638';
+    ctx.strokeStyle = '#5C2A4C';
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W-60, y); ctx.stroke();
 
     // Total
     y += 60;
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#5A1638';
+    ctx.fillStyle = '#5C2A4C';
     ctx.font = '700 28px Sora, sans-serif';
     ctx.fillText('TOTAL', 60, y);
     ctx.textAlign = 'right';
@@ -1172,7 +1174,7 @@ let pendingLocalPush = false;
     if (bcv){
       y += 42;
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#8B6E77';
+      ctx.fillStyle = '#8C6E7E';
       ctx.font = '600 22px Inter, sans-serif';
       ctx.fillText('≈ ' + fmtBs(payment.total * bcv.rate), W - 60, y);
       ctx.textAlign = 'left';
@@ -1191,13 +1193,13 @@ let pendingLocalPush = false;
 
     let py = y + 34;
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#5A1638';
+    ctx.fillStyle = '#5C2A4C';
     ctx.font = '700 20px Sora, sans-serif';
     ctx.fillText('📱 Pago Móvil', 84, py);
 
     py += 34;
     ctx.font = '600 18px Inter, sans-serif';
-    ctx.fillStyle = '#2B0E1C';
+    ctx.fillStyle = '#2A1220';
     ctx.fillText(`Banco: ${PAGO_MOVIL.banco}`, 84, py);
     py += 28;
     ctx.fillText(`C.I.: ${PAGO_MOVIL.ci}`, 84, py);
@@ -1206,14 +1208,14 @@ let pendingLocalPush = false;
     if (bcv){
       py += 32;
       ctx.font = '700 20px Inter, sans-serif';
-      ctx.fillStyle = '#5A1638';
+      ctx.fillStyle = '#5C2A4C';
       ctx.fillText(`Monto a pagar: ${fmtBs(payment.total * bcv.rate)}`, 84, py);
     }
     y += boxH;
 
     // Footer
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#8B6E77';
+    ctx.fillStyle = '#8C6E7E';
     ctx.font = 'italic 400 20px Inter, sans-serif';
     ctx.fillText('¡Gracias por tu preferencia!', W/2, H - 90);
     ctx.font = '400 16px Inter, sans-serif';
@@ -1833,6 +1835,25 @@ let pendingLocalPush = false;
   $('invoiceClose').addEventListener('click', () => $('invoiceOverlay').classList.remove('show'));
   $('invoiceOverlay').addEventListener('click', (e) => { if (e.target.id === 'invoiceOverlay') $('invoiceOverlay').classList.remove('show'); });
   $('saveClientBtn').addEventListener('click', saveClient);
+
+  // Elegir clienta desde los contactos del celular (solo Chrome/Android por ahora)
+  const contactsSupported = ('contacts' in navigator) && ('ContactsManager' in window);
+  if (contactsSupported){
+    $('pickContactBtn').style.display = 'block';
+    $('pickContactHelper').style.display = 'block';
+    $('pickContactBtn').addEventListener('click', async () => {
+      try{
+        const results = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+        if (results && results.length){
+          const c = results[0];
+          if (c.name && c.name[0]) $('newName').value = c.name[0];
+          if (c.tel && c.tel[0]) $('newPhone').value = c.tel[0];
+        }
+      }catch(e){
+        // el usuario canceló el selector, no hacemos nada
+      }
+    });
+  }
   $('savePayBtn').addEventListener('click', savePayment);
   $('searchClients').addEventListener('input', renderClients);
   $('payAdvance').addEventListener('input', updateRemainingPreview);
