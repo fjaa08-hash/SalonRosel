@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Rosel">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -31,7 +31,7 @@
     --warn:#D98B2B;
     --danger:#C6425E;
     --muted:#6B6B6B;
-    --holo:linear-gradient(120deg, #CE639D, #7350A0, #689EC6, #E1AE7A, #CE639D);
+    --holo:linear-gradient(120deg, #FF6FA8, #C77DFF, #5FC9F0, #FFC966, #FF6FA8);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -635,7 +635,7 @@
       <button class="close-x" id="invoiceClose">✕</button>
     </div>
     <div style="text-align:center;">
-      <canvas id="invoiceCanvas" width="720" height="1040" style="width:100%; max-width:320px; border-radius:14px; box-shadow:0 4px 18px rgba(92,42,76,.18);"></canvas>
+      <canvas id="invoiceCanvas" width="720" height="1040" style="width:100%; max-width:400px; border-radius:14px; box-shadow:0 4px 18px rgba(92,42,76,.18);"></canvas>
     </div>
     <button class="btn-main" id="invoiceShareBtn" style="margin-top:16px;">📤 Enviar imagen por WhatsApp</button>
     <button class="btn-main secondary" id="invoiceDownloadBtn">Descargar factura</button>
@@ -1063,7 +1063,7 @@ let pendingLocalPush = false;
     const canvas = $('invoiceCanvas');
     const items = paymentItems(payment);
     const bcv = await getBCVRate();
-    canvas.height = 900 + Math.max(items.length - 1, 0) * 40 + (bcv ? 55 : 0) + 190;
+    canvas.height = 960 + Math.max(items.length - 1, 0) * 40 + (bcv ? 55 : 0) + 190;
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
 
@@ -1074,6 +1074,7 @@ let pendingLocalPush = false;
         document.fonts.load('400 22px Inter'),
         document.fonts.load('600 22px Inter'),
         document.fonts.load('700 46px Sora'),
+        document.fonts.load("600 30px 'Dancing Script'"),
       ]);
     }catch(e){ /* fonts best-effort */ }
 
@@ -1081,27 +1082,45 @@ let pendingLocalPush = false;
     ctx.fillStyle = '#FFFDF9';
     ctx.fillRect(0, 0, W, H);
 
-    // Header band
-    ctx.fillStyle = '#111111';
-    ctx.fillRect(0, 0, W, 240);
-    ctx.beginPath(); ctx.arc(W - 60, 10, 110, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(206,99,157,.35)'; ctx.fill();
-    ctx.beginPath(); ctx.arc(60, 230, 70, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(225,174,122,.3)'; ctx.fill();
+    // Header band — degradado vivo tornasol
+    const bandH = 260;
+    const bandGrad = ctx.createLinearGradient(0, 0, W, bandH);
+    bandGrad.addColorStop(0, '#FF6FA8');
+    bandGrad.addColorStop(0.35, '#C77DFF');
+    bandGrad.addColorStop(0.7, '#5FC9F0');
+    bandGrad.addColorStop(1, '#FFC966');
+    ctx.fillStyle = bandGrad;
+    ctx.fillRect(0, 0, W, bandH);
 
+    // Logo real, centrado, en forma de sello circular
+    const logoImg = document.querySelector('.brand-logo');
+    const logoSize = 176;
+    const logoCx = W / 2;
+    const logoCy = bandH / 2 + 6;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(logoCx, logoCy, logoSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 40px Sora, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('SALÓN', W/2, 92);
-    ctx.fillStyle = '#E1AE7A';
-    ctx.fillText('ROSEL', W/2, 138);
+    ctx.fillRect(logoCx - logoSize/2, logoCy - logoSize/2, logoSize, logoSize);
+    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0){
+      ctx.drawImage(logoImg, logoCx - logoSize/2, logoCy - logoSize/2, logoSize, logoSize);
+    }
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(logoCx, logoCy, logoSize / 2, 0, Math.PI * 2);
+    ctx.lineWidth = 7;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.stroke();
 
-    ctx.fillStyle = '#EBC9D3';
-    ctx.font = '400 20px Inter, sans-serif';
-    wrapCanvasText(ctx, SALON_ADDRESS, W/2, 175, W - 120, 26, 'center');
+    ctx.fillStyle = '#6B6B6B';
+    ctx.font = '400 19px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    wrapCanvasText(ctx, SALON_ADDRESS, W/2, bandH + 34, W - 120, 25, 'center');
 
     // "FACTURA" label
-    let y = 300;
+    let y = bandH + 90;
     ctx.fillStyle = '#111111';
     ctx.font = '700 30px Sora, sans-serif';
     ctx.textAlign = 'left';
@@ -1241,9 +1260,10 @@ let pendingLocalPush = false;
 
     // Footer
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#6B6B6B';
-    ctx.font = 'italic 400 20px Inter, sans-serif';
+    ctx.fillStyle = '#7350A0';
+    ctx.font = "600 30px 'Dancing Script', cursive";
     ctx.fillText('¡Gracias por tu preferencia!', W/2, H - 90);
+    ctx.fillStyle = '#6B6B6B';
     ctx.font = '400 16px Inter, sans-serif';
     wrapCanvasText(ctx, SALON_ADDRESS, W/2, H - 50, W - 100, 20, 'center');
   }
