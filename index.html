@@ -35,12 +35,32 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
+  html{
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   body{
     background:var(--blush);
     color:var(--plum-ink);
     font-family:'Inter',system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+  input, textarea, select, .helper, .ledger-service, .rem-service{
+    -webkit-touch-callout: default;
+  }
+  button, .btn-main, .btn-mini, .tab, .fab, .item-remove, .close-x, .install-btn{
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .08s ease;
+  }
+  button:active, .btn-main:active, .btn-mini:active, .tab:active, .fab:active, .item-remove:active, .close-x:active{
+    transform: scale(0.96);
   }
   .app{
     max-width:480px;
@@ -87,7 +107,7 @@
     box-shadow:0 3px 10px rgba(0,0,0,.25);
     flex-shrink:0;
   }
-  .brand-logo{ width:100%; height:100%; object-fit:cover; display:block; }
+  .brand-logo{ width:100%; height:100%; object-fit:cover; display:block; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; pointer-events:none; }
   .hdr-sub{
     margin-top:4px;
     font-size:13px;
@@ -335,6 +355,8 @@
     padding:20px 20px 26px;
     max-height:86vh;
     overflow-y:auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     animation:up .18s ease-out;
   }
   @keyframes up{ from{transform:translateY(24px); opacity:0;} to{transform:translateY(0); opacity:1;} }
@@ -1094,14 +1116,28 @@ let pendingLocalPush = false;
 
     // Logo real, centrado, en forma de sello circular
     const logoImg = document.querySelector('.brand-logo');
-    const logoSize = 176;
+    const logoSize = 196;
     const logoCx = W / 2;
     const logoCy = bandH / 2 + 6;
+
+    // Sombra suave detrás del sello para dar profundidad
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.25)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    ctx.beginPath();
+    ctx.arc(logoCx, logoCy, logoSize / 2 + 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.restore();
+
     ctx.save();
     ctx.beginPath();
     ctx.arc(logoCx, logoCy, logoSize / 2, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(logoCx - logoSize/2, logoCy - logoSize/2, logoSize, logoSize);
     if (logoImg && logoImg.complete && logoImg.naturalWidth > 0){
