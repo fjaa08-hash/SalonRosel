@@ -73,6 +73,7 @@ footer{text-align:center;color:var(--mute);font-size:12px;padding:18px 0 4px}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import {getFirestore,collection,onSnapshot} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import {getAuth,signInAnonymously,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCtG6vH1LXlpg2L-0vXxcGkmhAK3sELW0o",
@@ -85,6 +86,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+onAuthStateChanged(auth, u=>{ if(!u) signInAnonymously(auth).catch(()=>{ grid.innerHTML='<p class="empty">No se pudo conectar con el catálogo. Intenta más tarde.</p>'; }); });
 
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = n => Number(n||0).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2});
