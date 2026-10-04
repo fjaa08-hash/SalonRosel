@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Salón Rosel</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#FFE3ED">
+<meta name="theme-color" content="#111111">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -75,8 +75,8 @@
   /* Header */
   .hdr{
     padding:26px 20px 18px;
-    background:linear-gradient(120deg, #FFFFFF 0%, #FFF3F8 30%, #FFD3E8 52%, #FF9FCB 66%, #C77DFF 80%, #5FC9F0 92%, #FFC966 100%);
-    color:#111111;
+    background:#111111;
+    color:#fff;
     border-radius:0 0 28px 28px;
     position:relative;
     overflow:hidden;
@@ -111,7 +111,7 @@
   .hdr-sub{
     margin-top:4px;
     font-size:13px;
-    color:#6B6B6B;
+    color:#EBC9D3;
     position:relative; z-index:1;
   }
   .stats-row{
@@ -122,11 +122,9 @@
   }
   .stat{
     flex:1;
-    background:rgba(255,255,255,.55);
-    border:1px solid rgba(255,255,255,.7);
+    background:rgba(255,255,255,.12);
     border-radius:14px;
     padding:10px 12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.05);
   }
   .holo-text{
     background:var(--holo);
@@ -137,7 +135,7 @@
     -webkit-text-fill-color:transparent;
   }
   .stat b{display:block; font-family:'Sora',sans-serif; font-size:20px; font-weight:700;}
-  .stat span{font-size:11.5px; color:#6B6B6B;}
+  .stat span{font-size:11.5px; color:#EBC9D3;}
 
   /* Tabs */
   .tabs{
@@ -463,9 +461,9 @@
   .ledger-icons{display:flex; gap:6px; justify-content:flex-end; margin-top:6px;}
 
   .install-btn{
-    background:rgba(255,255,255,.85);
-    border:1px solid rgba(255,255,255,.9);
-    color:#111111;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.35);
+    color:#fff;
     font-size:11.5px;
     font-weight:600;
     padding:6px 12px;
@@ -755,18 +753,15 @@ let pendingLocalPush = false;
     if (state === 'on'){
       el.textContent = '☁ Sincronizado';
       el.style.display = 'inline-block';
-      el.style.background = 'rgba(62,143,92,.18)';
-      el.style.color = '#2E6B44';
+      el.style.background = 'rgba(62,143,92,.25)';
     } else if (state === 'connecting'){
       el.textContent = '☁ Conectando...';
       el.style.display = 'inline-block';
-      el.style.background = 'rgba(0,0,0,.08)';
-      el.style.color = '#6B6B6B';
+      el.style.background = 'rgba(255,255,255,.18)';
     } else if (state === 'error'){
       el.textContent = '⚠ Sin conexión a la nube';
       el.style.display = 'inline-block';
-      el.style.background = 'rgba(198,66,94,.2)';
-      el.style.color = '#A03A50';
+      el.style.background = 'rgba(198,66,94,.35)';
     } else {
       el.style.display = 'none';
     }
