@@ -1283,19 +1283,44 @@ let pendingLocalPush = false;
     }
   }
 
-  async function fetchBCVRate(){
-    // Fuente 1
-    try{
-      const data = await fetchWithTimeout('https://bcv-api-ashy.vercel.app/api/tasa', 4000);
-      const rate = parseFloat(data?.bcv?.eur);
-      if (rate > 0) return rate;
-    }catch(e){ /* seguimos con la siguiente fuente */ }
-    // Fuente 2
-    try{
-      const data = await fetchWithTimeout('https://thehermit007.github.io/Quadra_API/data.json', 4000);
-      const rate = parseFloat(data?.rates?.EUR);
-      if (rate > 0) return rate;
-    }catch(e){ /* sin suerte tampoco */ }
+  // Lee una tasa venga como número o como texto ("1004.95", "1004,95", "1.004,95", "Bs. 1.004,95"…)
+  function parseRate(v){
+    if (typeof v === 'number') return (isFinite(v) && v > 0) ? v : null;
+    let t = String(v == null ? '' : v).trim().replace(/[^\d.,]/g, '');
+    if (!t) return null;
+    const lc = t.lastIndexOf(','), ld = t.lastIndexOf('.');
+    if (lc > -1 && ld > -1){
+      // Hay coma y punto: el que aparece al final es el decimal
+      t = lc > ld ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
+    } else if (lc > -1){
+      t = (t.split(',').length > 2) ? t.replace(/,/g, '') : t.replace(',', '.');
+    } else if (ld > -1 && t.split('.').length > 2){
+      t = t.replace(/\./g, '');
+    }
+    const n = parseFloat(t);
+    return (isFinite(n) && n > 0) ? n : null;
+  }
+
+  // Descarta tasas absurdas (p. ej. a las que "se les cayó" un cero) comparando con la última conocida
+  function rateLooksOk(r, ref){
+    if (!(r > 0)) return false;
+    if (ref && (r < ref * 0.5 || r > ref * 2)) return false;
+    return true;
+  }
+
+  async function fetchBCVRate(ref){
+    const sources = [
+      ['https://bcv-api-ashy.vercel.app/api/tasa',                d => d?.bcv?.eur],
+      ['https://thehermit007.github.io/Quadra_API/data.json',     d => d?.rates?.EUR],
+      ['https://ve.dolarapi.com/v1/euros/oficial',                d => d?.promedio ?? d?.venta ?? d?.precio],
+    ];
+    for (const [url, pick] of sources){
+      try{
+        const data = await fetchWithTimeout(url, 4000);
+        const rate = parseRate(pick(data));
+        if (rateLooksOk(rate, ref)) return rate;
+      }catch(e){ /* seguimos con la siguiente fuente */ }
+    }
     return null;
   }
 
@@ -1304,19 +1329,19 @@ let pendingLocalPush = false;
     if (bcvCache && (now - bcvCache.fetchedAt) < 6 * 60 * 60 * 1000){
       return bcvCache; // reutiliza si se pidió hace menos de 6 horas
     }
-    const rate = await fetchBCVRate();
-    if (rate){
-      bcvCache = { rate, fetchedAt: now };
-      try{ await window.storage.set('bcvRateCache', JSON.stringify(bcvCache), false); }catch(e){}
-      return bcvCache;
-    }
-    // Sin internet o las dos fuentes fallaron: usa el último valor guardado.
+    // Última tasa conocida (en memoria o guardada): sirve de referencia y de respaldo
     if (!bcvCache){
       try{
         const stored = await window.storage.get('bcvRateCache', false);
-        if (stored) bcvCache = JSON.parse(stored.value);
+        if (stored){ const c = JSON.parse(stored.value); if (c && c.rate > 0) bcvCache = c; }
       }catch(e){}
     }
+    const rate = await fetchBCVRate(bcvCache ? bcvCache.rate : null);
+    if (rate){
+      bcvCache = { rate, fetchedAt: now };
+      try{ await window.storage.set('bcvRateCache', JSON.stringify(bcvCache), false); }catch(e){}
+    }
+    // Sin internet o fuentes dudosas: queda el último valor bueno guardado.
     return bcvCache;
   }
 
