@@ -1321,6 +1321,9 @@ let pendingLocalPush = false;
 
   async function fetchBCVRate(ref){
     const sources = [
+      // Fuente principal: Frankfurter (tasa oficial del BCV). Devuelve { date, base, quote, rate }, con rate = Bs. por 1 €
+      ['https://api.frankfurter.dev/v2/rate/EUR/VES?providers=bcv', d => (!d?.quote || d.quote === 'VES') ? d?.rate : null],
+      // Respaldos
       ['https://bcv-api-ashy.vercel.app/api/tasa',                d => d?.bcv?.eur],
       ['https://thehermit007.github.io/Quadra_API/data.json',     d => d?.rates?.EUR],
       ['https://ve.dolarapi.com/v1/euros/oficial',                d => d?.promedio ?? d?.venta ?? d?.precio],
