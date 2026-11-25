@@ -1314,7 +1314,7 @@ let pendingLocalPush = false;
 
   // Descarta tasas absurdas (p. ej. a las que "se les cayó" un cero) comparando con la última conocida
   function rateLooksOk(r, ref){
-    if (!(r > 0)) return false;
+    if (!(r >= 100)) return false; // el euro en Bs. ya supera 1.000; menos de 100 es un error de formato
     if (ref && (r < ref * 0.5 || r > ref * 2)) return false;
     return true;
   }
@@ -1331,8 +1331,11 @@ let pendingLocalPush = false;
     for (const [url, pick] of sources){
       try{
         const data = await fetchWithTimeout(url, 4000);
-        const rate = parseRate(pick(data), ref);
-        if (rateLooksOk(rate, ref)) return rate;
+        const raw = pick(data);
+        // Un número JSON (Frankfurter) ya es exacto: no se compara con la tasa guardada
+        const r = (typeof raw === 'number') ? null : ref;
+        const rate = parseRate(raw, r);
+        if (rateLooksOk(rate, r)) return rate;
       }catch(e){ /* seguimos con la siguiente fuente */ }
     }
     return null;
@@ -1340,20 +1343,20 @@ let pendingLocalPush = false;
 
   async function getBCVRate(){
     const now = Date.now();
-    if (bcvCache && (now - bcvCache.fetchedAt) < 6 * 60 * 60 * 1000){
+    if (bcvCache && bcvCache.rate >= 100 && (now - bcvCache.fetchedAt) < 6 * 60 * 60 * 1000){
       return bcvCache; // reutiliza si se pidió hace menos de 6 horas
     }
     // Última tasa conocida (en memoria o guardada): sirve de referencia y de respaldo
     if (!bcvCache){
       try{
-        const stored = await window.storage.get('bcvRateCache', false);
-        if (stored){ const c = JSON.parse(stored.value); if (c && c.rate > 0) bcvCache = c; }
+        const stored = await window.storage.get('bcvRateCache2', false);
+        if (stored){ const c = JSON.parse(stored.value); if (c && c.rate >= 100) bcvCache = c; }
       }catch(e){}
     }
     const rate = await fetchBCVRate(bcvCache ? bcvCache.rate : null);
     if (rate){
       bcvCache = { rate, fetchedAt: now };
-      try{ await window.storage.set('bcvRateCache', JSON.stringify(bcvCache), false); }catch(e){}
+      try{ await window.storage.set('bcvRateCache2', JSON.stringify(bcvCache), false); }catch(e){}
     }
     // Sin internet o fuentes dudosas: queda el último valor bueno guardado.
     return bcvCache;
